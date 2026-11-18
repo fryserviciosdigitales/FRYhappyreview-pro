@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <?!= include('Css'); ?>
+  </head>
+  <body>
+
+    <!-- PANTALLA DE LOGIN -->
+    <div id="auth-screen" style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+      <div class="card" style="width: 100%; max-width: 400px; text-align: left;">
+        <div class="text-center" style="margin-bottom: 1.5rem;">
+          <h2 style="color: var(--primary); font-size: 1.8rem; margin-bottom: 0.25rem;">HAPPYREVIEW PRO</h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Plataforma SaaS de Reputación y Fidelización</p>
+        </div>
+        
+        <form id="login-form" onsubmit="procesarLogin(event)">
+          <div class="form-group">
+            <label>Correo Electrónico</label>
+            <input type="email" id="login-email" required value="fryserviciosdigitales@gmail.com">
+          </div>
+          <div class="form-group">
+            <label>Contraseña</label>
+            <input type="password" id="login-password" required value="123456">
+          </div>
+          <button type="submit" class="btn" style="width: 100%;">Iniciar Sesión</button>
+        </form>
+        <div id="login-error" style="color: var(--danger); margin-top: 1rem; text-align: center; display: none; font-size: 0.9rem;"></div>
+      </div>
+    </div>
+
+    <!-- PANTALLA APLICACIÓN (SPA) -->
+    <div id="app-screen" class="hidden">
+      <header>
+        <h1>HAPPYREVIEW PRO</h1>
+        <div class="nav-actions">
+          <span id="user-display-name" style="font-size: 0.9rem; font-weight: 500; margin-right: 0.5rem; color: var(--text-muted);"></span>
+          <div id="admin-nav" class="hidden">
+            <button class="nav-btn" onclick="navegar('admin-dash')">📊 Dashboard</button>
+            <button class="nav-btn" onclick="navegar('empresas-view')">🏢 Empresas</button>
+            <button class="nav-btn" onclick="navegar('usuarios-view')">👤 Usuarios</button>
+          </div>
+          <div id="empresa-nav" class="hidden">
+            <button class="nav-btn" onclick="navegar('empresa-dash')">📈 Mi Panel</button>
+            <button class="nav-btn" onclick="abrirModalCartelPorEmpresa(usuarioActual.empresaId)">🖨️ Ver QR y Cartel</button>
+          </div>
+          <button class="nav-btn" onclick="cerrarSesion()" style="border-color: #fca5a5; color: #dc2626; background: #fef2f2;">Cerrar Sesión</button>
+        </div>
+      </header>
+
+      <div class="container">
+        <div id="view-admin-dash" class="hidden"><?!= include('AdminDashboard'); ?></div>
+        <div id="view-empresas" class="hidden"><?!= include('Empresas'); ?></div>
+        
+        <div id="view-usuarios" class="hidden">
+          <div class="card">
+            <h2 id="usr-form-title">✨ Crear Nuevo Usuario del Sistema</h2>
+            <form id="usuario-form" onsubmit="guardarUsuario(event)">
+              <input type="hidden" id="usr-email-original">
+              
+              <div class="form-row">
+                <div class="form-group" style="flex:1;">
+                  <label>Email (Login)</label>
+                  <input type="email" id="usr-email" required placeholder="usuario@local.com">
+                </div>
+                <div class="form-group" style="flex:1;">
+                  <label>Contraseña</label>
+                  <input type="password" id="usr-password" required placeholder="Mínimo 6 caracteres">
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group" style="flex:1;">
+                  <label>Nombre Completo</label>
+                  <input type="text" id="usr-nombre" required placeholder="Nombre Apellido">
+                </div>
+                <div class="form-group" style="flex:1;">
+                  <label>Rol</label>
+                  <select id="usr-rol" onchange="cambiarRolSelect()">
+                    <option value="EMPRESA">EMPRESA</option>
+                    <option value="ADMIN">ADMIN</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="form-group" id="usr-empresa-group">
+                <label>Asignar Empresa</label>
+                <select id="usr-empresa-id"></select>
+              </div>
+              
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary" id="btn-guardar-usuario">Crear Usuario</button>
+                <button type="button" class="btn btn-secondary hidden" id="btn-cancelar-usuario" onclick="resetFormUsuario()">Cancelar</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="card">
+            <h2>👥 Listado de Usuarios del Sistema</h2>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Empresa Asignada</th>
+                    <th style="text-align: right;">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="usuarios-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="view-empresa-dash" class="hidden"><?!= include('EmpresaDashboard'); ?></div>
+      </div>
+    </div>
+
+    <!-- MODAL CARTEL Y QR -->
+    <div id="modal-cartel" class="modal">
+      <div class="modal-content" style="max-width: 600px;">
+        <h2>📱 Código QR & Cartel Imprimible</h2>
+        <p style="color: var(--text-muted); margin-bottom: 1rem; font-size: 0.9rem;">Previsualización del cartel para mesas y recepción:</p>
+        
+        <div id="printable-poster" style="border: 4px solid var(--primary); border-radius: var(--radius); padding: 25px; background: #fff; text-align: center; margin-bottom: 1.5rem; box-shadow: var(--shadow-subtle);">
+          <h1 id="poster-empresa-nombre" style="color: var(--primary); font-size: 24px; margin-bottom: 10px;">Nombre Establecimiento</h1>
+          <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 20px;">¡Escanea con tu cámara para dejarnos tu opinión y consigue tu regalo exclusivo!</p>
+          <div id="qr-modal-img-container" style="display: inline-block; padding: 10px; background: #fff; border: 2px solid var(--border-color); border-radius: 8px;"></div>
+          <p style="font-size: 12px; color: var(--text-muted); margin-top: 15px; font-weight: bold; letter-spacing: 0.5px;">VALORACIONES & FIDELIZACIÓN - HAPPYREVIEW PRO</p>
+        </div>
+
+        <p id="qr-modal-url" style="font-size: 0.75rem; word-break: break-all; color: var(--text-muted); margin-bottom: 1rem;"></p>
+        
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+          <button class="btn btn-success" onclick="imprimirCartelDirecto()">🖨️ Imprimir / Guardar como PDF</button>
+          <button class="btn btn-secondary" onclick="cerrarModalCartel()">Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      var usuarioActual = null;
+      var netlifyDomain = 'https://happyreviewpro.netlify.app';
+      var directEmpresaId = '<?= directEmpresaId ?>';
+      var listaUsuariosGlobal = [];
+
+      window.onload = function() {
+        if (directEmpresaId) {
+          usuarioActual = { email: 'portal@empresa.com', nombre: 'Portal Establecimiento', rol: 'EMPRESA', empresaId: directEmpresaId };
+          document.getElementById('auth-screen').classList.add('hidden');
+          document.getElementById('app-screen').classList.remove('hidden');
+          document.getElementById('user-display-name').innerText = 'Portal Directo';
+          document.getElementById('empresa-nav').classList.remove('hidden');
+          navegar('empresa-dash');
+        }
+      };
+
+      function procesarLogin(e) {
+        e.preventDefault();
+        var email = document.getElementById('login-email').value;
+        var pass = document.getElementById('login-password').value;
+        var errDiv = document.getElementById('login-error');
+        errDiv.style.display = 'none';
+
+        google.script.run
+          .withSuccessHandler(function(res){
+            if (!res || !res.success) {
+              errDiv.innerText = res && res.error ? res.error : 'Credenciales incorrectas';
+              errDiv.style.display = 'block';
+              return;
+            }
+            usuarioActual = res.usuario;
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
+            document.getElementById('user-display-name').innerText = usuarioActual.nombre + ' (' + usuarioActual.rol + ')';
+
+            if (usuarioActual.rol === 'ADMIN') {
+              document.getElementById('admin-nav').classList.remove('hidden');
+              navegar('admin-dash');
+            } else if (usuarioActual.rol === 'EMPRESA') {
+              if (!usuarioActual.empresaId) {
+                alert('El usuario EMPRESA no tiene EmpresaID asignado');
+                return;
+              }
+              document.getElementById('empresa-nav').classList.remove('hidden');
+              navegar('empresa-dash');
+            }
+          })
+          .withFailureHandler(function(error){
+            console.error(error);
+            errDiv.innerText = 'Error de conexión';
+            errDiv.style.display = 'block';
+          })
+          .validarLogin(email, pass);
+      }
+
+      function cerrarSesion() {
+        usuarioActual = null;
+        if (directEmpresaId) {
+          window.location.href = netlifyDomain;
+          return;
+        }
+        document.getElementById('app-screen').classList.add('hidden');
+        document.getElementById('auth-screen').classList.remove('hidden');
+        document.getElementById('admin-nav').classList.add('hidden');
+        document.getElementById('empresa-nav').classList.add('hidden');
+        document.getElementById('login-password').value = '';
+      }
+
+      function navegar(vista) {
+        document.getElementById('view-admin-dash').classList.add('hidden');
+        document.getElementById('view-empresas').classList.add('hidden');
+        document.getElementById('view-usuarios').classList.add('hidden');
+        document.getElementById('view-empresa-dash').classList.add('hidden');
+
+        if (vista === 'admin-dash') {
+          document.getElementById('view-admin-dash').classList.remove('hidden');
+          cargarAdminDash();
+        } else if (vista === 'empresas-view') {
+          document.getElementById('view-empresas').classList.remove('hidden');
+          cargarEmpresasAdmin();
+        } else if (vista === 'usuarios-view') {
+          document.getElementById('view-usuarios').classList.remove('hidden');
+          cargarUsuariosAdmin();
+        } else if (vista === 'empresa-dash') {
+          document.getElementById('view-empresa-dash').classList.remove('hidden');
+          cargarEmpresaDash();
+        }
+      }
+
+      function cargarUsuariosAdmin() {
+        google.script.run.withSuccessHandler(function(empresas){
+          var selectEmp = document.getElementById('usr-empresa-id');
+          if (!selectEmp) return;
+          selectEmp.innerHTML = '<option value="">-- Selecciona empresa --</option>';
+          for (var i = 0; i < empresas.length; i++) {
+            selectEmp.innerHTML += '<option value="' + empresas[i].id + '">' + empresas[i].nombre + '</option>';
+          }
+        }).obtenerEmpresas();
+
+        google.script.run.withSuccessHandler(function(usuarios){
+          listaUsuariosGlobal = usuarios || [];
+          var tbody = document.getElementById('usuarios-tbody');
+          if (!tbody) return;
+          tbody.innerHTML = '';
+
+          if (listaUsuariosGlobal.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center">No hay usuarios registrados.</td></tr>';
+            return;
+          }
+
+          for (var i = 0; i < listaUsuariosGlobal.length; i++) {
+            var u = listaUsuariosGlobal[i];
+            tbody.innerHTML +=
+              '<tr>' +
+              '<td><strong>' + u.nombre + '</strong></td>' +
+              '<td>' + u.email + '</td>' +
+              '<td><span class="badge ' + (u.rol === 'ADMIN' ? 'badge-premium' : 'badge-active') + '">' + u.rol + '</span></td>' +
+              '<td>' + (u.empresaId || '-') + '</td>' +
+              '<td style="text-align:right;">' +
+              '<button class="btn btn-sm btn-outline" style="margin-right:4px;" onclick="prepararEdicionUsuario(\'' + u.email + '\')">Editar</button>' +
+              (u.email.toLowerCase() !== 'fryserviciosdigitales@gmail.com'
+                ? '<button class="btn btn-sm btn-danger" onclick="eliminarUsuario(\'' + u.email + '\')">Eliminar</button>'
+                : '<span style="font-size:.8rem;color:var(--text-muted);">Sistema</span>') +
+              '</td>' +
+              '</tr>';
+          }
+        }).withFailureHandler(function(error){
+          console.error(error);
+          alert(error.message);
+        }).obtenerUsuarios();
+      }
+
+      function cambiarRolSelect() {
+        var rol = document.getElementById('usr-rol').value;
+        var group = document.getElementById('usr-empresa-group');
+        if (group) group.style.display = (rol === 'ADMIN') ? 'none' : 'block';
+      }
+
+      function prepararEdicionUsuario(email) {
+        var usr = null;
+        for (var i = 0; i < listaUsuariosGlobal.length; i++) {
+          if (listaUsuariosGlobal[i].email.toLowerCase() === email.toLowerCase()) {
+            usr = listaUsuariosGlobal[i];
+            break;
+          }
+        }
+        if (!usr) return;
+
+        document.getElementById('usr-form-title').innerText = '✏️ Editar Usuario: ' + usr.nombre;
+        document.getElementById('usr-email-original').value = usr.email;
+        document.getElementById('usr-email').value = usr.email;
+        document.getElementById('usr-nombre').value = usr.nombre;
+        document.getElementById('usr-rol').value = usr.rol;
+        document.getElementById('usr-empresa-id').value = usr.empresaId || '';
+        document.getElementById('usr-password').value = '';
+        document.getElementById('usr-password').required = false;
+
+        cambiarRolSelect();
+        document.getElementById('btn-cancelar-usuario').classList.remove('hidden');
+        document.getElementById('btn-guardar-usuario').innerText = 'Actualizar Usuario';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function resetFormUsuario() {
+        document.getElementById('usr-form-title').innerText = '✨ Crear Nuevo Usuario del Sistema';
+        document.getElementById('usuario-form').reset();
+        document.getElementById('usr-email-original').value = '';
+        document.getElementById('usr-password').required = true;
+        cambiarRolSelect();
+        document.getElementById('btn-cancelar-usuario').classList.add('hidden');
+        document.getElementById('btn-guardar-usuario').innerText = 'Crear Usuario';
+      }
+
+      function guardarUsuario(e) {
+        e.preventDefault();
+        var emailOriginal = document.getElementById('usr-email-original').value;
+        var email = document.getElementById('usr-email').value;
+        var password = document.getElementById('usr-password').value;
+        var nombre = document.getElementById('usr-nombre').value;
+        var rol = document.getElementById('usr-rol').value;
+        var empresaId = document.getElementById('usr-empresa-id').value;
+
+        if (rol === 'EMPRESA' && !empresaId) {
+          alert('Selecciona una empresa para usuarios con rol EMPRESA.');
+          return;
+        }
+
+        if (emailOriginal) {
+          google.script.run.withSuccessHandler(function(res) {
+            if (res.success) {
+              resetFormUsuario();
+              cargarUsuariosAdmin();
+              alert('Usuario actualizado correctamente.');
+            } else {
+              alert(res.error);
+            }
+          }).editarUsuario(emailOriginal, nombre, email, rol, empresaId, password);
+        } else {
+          if (!password) {
+            alert('Ingresa una contraseña.');
+            return;
+          }
+          google.script.run.withSuccessHandler(function(res) {
+            if (res.success) {
+              resetFormUsuario();
+              cargarUsuariosAdmin();
+              alert('Usuario creado correctamente.');
+            } else {
+              alert(res.error);
+            }
+          }).crearUsuario(email, password, nombre, rol, rol === 'ADMIN' ? '' : empresaId);
+        }
+      }
+
+      function eliminarUsuario(email) {
+        if (confirm('¿Estás seguro de eliminar este usuario?')) {
+          google.script.run.withSuccessHandler(function() { cargarUsuariosAdmin(); }).eliminarUsuario(email);
+        }
+      }
+
+      function abrirModalCartelPorEmpresa(empId) {
+        google.script.run.withSuccessHandler(function(emp) {
+          var nombreEmpresa = emp ? emp.nombre : 'Establecimiento';
+          document.getElementById('poster-empresa-nombre').innerText = nombreEmpresa;
+          var targetUrl = 'https://happyreviewpro.netlify.app/?id=' + empId;
+          var qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=' + encodeURIComponent(targetUrl);
+          
+          document.getElementById('qr-modal-img-container').innerHTML = '<img src="' + qrApiUrl + '" alt="Código QR" style="width:200px; height:200px; display:block; margin:0 auto;">';
+          document.getElementById('qr-modal-url').innerText = targetUrl;
+          document.getElementById('modal-cartel').style.display = 'flex';
+        }).obtenerEmpresaPorId(empId);
+      }
+
+      function cerrarModalCartel() {
+        document.getElementById('modal-cartel').style.display = 'none';
+      }
+
+      function imprimirCartelDirecto() {
+        var contenido = document.getElementById('printable-poster').innerHTML;
+        var ventanaImpresion = window.open('', '', 'height=700,width=700');
+        ventanaImpresion.document.write('<html><head><title>Cartel QR - HAPPYREVIEW PRO</title>');
+        ventanaImpresion.document.write('<style>body { font-family: Plus Jakarta Sans, Arial, sans-serif; text-align: center; padding: 30px; }</style>');
+        ventanaImpresion.document.write('</head><body>');
+        ventanaImpresion.document.write('<div style="border: 4px solid #4f46e5; border-radius: 16px; padding: 40px; max-width: 500px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">' + contenido + '</div>');
+        ventanaImpresion.document.write('</body></html>');
+        ventanaImpresion.document.close();
+        ventanaImpresion.focus();
+        setTimeout(function() {
+          ventanaImpresion.print();
+          ventanaImpresion.close();
+        }, 500);
+      }
+    <\/script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>
+  </body>
+</html>

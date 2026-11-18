@@ -1,0 +1,263 @@
+<div class="card" style="background: linear-gradient(135deg,#0f172a 0%,#1e293b 100%); color:#fff; border:none;">
+  <h2 style="color:#fff;margin-bottom:0.5rem;">👑 Panel de Administración Global</h2>
+  <p style="color:rgba(255,255,255,.75);font-size:.95rem;">
+    Resumen general, control global de cupones y gestión de establecimientos SaaS.
+  </p>
+</div>
+
+<br>
+
+<div class="metrics-grid">
+  <div class="metric-card">
+    <p>Empresas Activas</p>
+    <h3 id="adm-empresas-activas">0</h3>
+  </div>
+  <div class="metric-card warn">
+    <p>Empresas Premium</p>
+    <h3 id="adm-empresas-premium">0</h3>
+  </div>
+  <div class="metric-card">
+    <p>Total Valoraciones</p>
+    <h3 id="adm-total-val">0</h3>
+  </div>
+  <div class="metric-card pos">
+    <p>Media Global</p>
+    <h3 id="adm-media-global">0</h3>
+  </div>
+  <div class="metric-card">
+    <p>Clicks Google</p>
+    <h3 id="adm-google-clicks">0</h3>
+  </div>
+  <div class="metric-card pos">
+    <p>Cupones Emitidos</p>
+    <h3 id="adm-cupones">0</h3>
+  </div>
+  <div class="metric-card">
+    <p>Cupones Canjeados</p>
+    <h3 id="adm-cupones-usados">0</h3>
+  </div>
+  <div class="metric-card pos">
+    <p>Tasa de Canje</p>
+    <h3 id="adm-tasa-canje">0%</h3>
+  </div>
+  <div class="metric-card warn">
+    <p>Incidencias Privadas</p>
+    <h3 id="adm-incidencias">0</h3>
+  </div>
+  <div class="metric-card">
+    <p>Valoraciones Mes</p>
+    <h3 id="adm-val-mes">0</h3>
+  </div>
+</div>
+
+<br>
+
+<div class="card">
+  <h2>🏆 Métrica Comercial Destacada</h2>
+  <div style="display:flex;justify-content:center;align-items:center;padding:30px;text-align:center;">
+    <div>
+      <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:10px;">
+        Recompensa más utilizada por los clientes
+      </p>
+      <h2 id="adm-top-recompensa" style="color:var(--primary);margin:0;">Sin datos</h2>
+    </div>
+  </div>
+</div>
+
+<br>
+
+<div class="card">
+  <h2>🎟️ Emisión Global de Cupones</h2>
+  <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1.25rem;">
+    Selecciona un establecimiento y emite un cupón personalizado.
+  </p>
+
+  <form id="form-admin-cupon" onsubmit="emitirCuponAdmin(event)">
+    <div class="form-row">
+      <div class="form-group" style="flex:2;">
+        <label>Seleccionar Empresa</label>
+        <select id="adm-cp-empresa" required></select>
+      </div>
+      <div class="form-group" style="flex:2;">
+        <label>Recompensa</label>
+        <input type="text" id="adm-cp-desc" required placeholder="Ej. Refresco Gratis / 20% Descuento">
+      </div>
+      <div class="form-group" style="flex:1;">
+        <label>Validez</label>
+        <select id="adm-cp-dias">
+          <option value="1">1 Día</option>
+          <option value="3">3 Días</option>
+          <option value="5" selected>5 Días</option>
+          <option value="7">7 Días</option>
+          <option value="15">15 Días</option>
+          <option value="30">30 Días</option>
+        </select>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">⚡ Emitir Cupón Global</button>
+  </form>
+</div>
+
+<br>
+
+<div class="card">
+  <h2>🎁 Todos los Cupones Emitidos</h2>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Empresa</th>
+          <th>Código</th>
+          <th>Recompensa</th>
+          <th>Caducidad</th>
+          <th>Estado</th>
+          <th style="text-align:right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="adm-cupones-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<br>
+
+<div class="card">
+  <h2>📊 Ranking de Rendimiento</h2>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Empresa</th>
+          <th>Valoraciones</th>
+          <th>Media</th>
+          <th>Google</th>
+        </tr>
+      </thead>
+      <tbody id="ranking-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  function cargarAdminDash() {
+    google.script.run.withSuccessHandler(function(m) {
+      document.getElementById('adm-empresas-activas').innerText = m.empresasActivas;
+      document.getElementById('adm-empresas-premium').innerText = m.empresasPremium;
+      document.getElementById('adm-total-val').innerText = m.totalValoraciones;
+      document.getElementById('adm-media-global').innerText = m.mediaGlobal;
+      document.getElementById('adm-google-clicks').innerText = m.totalGoogleReseñas;
+      document.getElementById('adm-cupones').innerText = m.totalCuponesEmitidos;
+
+      if (document.getElementById('adm-cupones-usados')) document.getElementById('adm-cupones-usados').innerText = m.cuponesUsados;
+      if (document.getElementById('adm-tasa-canje')) document.getElementById('adm-tasa-canje').innerText = m.tasaCanje + '%';
+      if (document.getElementById('adm-incidencias')) document.getElementById('adm-incidencias').innerText = m.incidencias;
+      if (document.getElementById('adm-val-mes')) document.getElementById('adm-val-mes').innerText = m.valoracionesMes;
+      if (document.getElementById('adm-top-recompensa')) document.getElementById('adm-top-recompensa').innerText = m.topRecompensa;
+
+      var tbody = document.getElementById('ranking-tbody');
+      tbody.innerHTML = '';
+
+      if (!m.ranking || m.ranking.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay datos suficientes.</td></tr>';
+        return;
+      }
+
+      for (var i = 0; i < m.ranking.length; i++) {
+        var r = m.ranking[i];
+        tbody.innerHTML +=
+          '<tr>' +
+          '<td><strong>' + r.nombre + '</strong></td>' +
+          '<td>' + r.totalVal + '</td>' +
+          '<td>⭐ ' + r.media + '</td>' +
+          '<td>' + r.googleClicks + '</td>' +
+          '</tr>';
+      }
+    }).obtenerMetricasAdmin();
+
+    google.script.run.withSuccessHandler(function(empresas) {
+      var select = document.getElementById('adm-cp-empresa');
+      if (!select) return;
+      select.innerHTML = '<option value="">-- Selecciona establecimiento --</option>';
+      for (var i = 0; i < empresas.length; i++) {
+        select.innerHTML += '<option value="' + empresas[i].id + '">' + empresas[i].nombre + '</option>';
+      }
+    }).obtenerEmpresas();
+
+    cargarCuponesAdminGlobales();
+  }
+
+  function cargarCuponesAdminGlobales() {
+    google.script.run.withSuccessHandler(function(lista) {
+      var tbody = document.getElementById('adm-cupones-tbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      if (!lista || lista.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding:1.5rem;color:var(--text-muted);">No hay cupones emitidos en el sistema.</td></tr>';
+        return;
+      }
+
+      for (var i = 0; i < lista.length; i++) {
+        var c = lista[i];
+        var estado = '';
+        var badgeClass = '';
+
+        if (c.usado) {
+          estado = 'CANJEADO';
+          badgeClass = 'badge-inactive';
+        } else if (c.caducado) {
+          estado = 'CADUCADO';
+          badgeClass = 'badge-inactive';
+        } else {
+          estado = 'DISPONIBLE';
+          badgeClass = 'badge-active';
+        }
+
+        tbody.innerHTML +=
+          '<tr>' +
+          '<td><strong>' + c.nombreEmpresa + '</strong></td>' +
+          '<td><code>' + c.codigo + '</code></td>' +
+          '<td>' + c.descuento + '</td>' +
+          '<td>' + c.caducidad + '</td>' +
+          '<td><span class="badge ' + badgeClass + '">' + estado + '</span></td>' +
+          '<td style="text-align:right;">' +
+          (!c.usado && !c.caducado
+            ? '<button class="btn btn-sm btn-success" onclick="marcarUsadoAdmin(\'' + c.codigo + '\')">Canjear</button> '
+            : '') +
+          '<button class="btn btn-sm btn-danger" onclick="borrarCuponAdmin(\'' + c.id + '\')">🗑️</button>' +
+          '</td>' +
+          '</tr>';
+      }
+    }).obtenerTodosLosCuponesAdmin();
+  }
+
+  function emitirCuponAdmin(e) {
+    e.preventDefault();
+    var empId = document.getElementById('adm-cp-empresa').value;
+    var desc = document.getElementById('adm-cp-desc').value;
+    var dias = document.getElementById('adm-cp-dias').value;
+
+    if (!empId) {
+      alert('Selecciona una empresa.');
+      return;
+    }
+
+    google.script.run.withSuccessHandler(function(res) {
+      if (res.success) {
+        alert('¡Cupón emitido con éxito!\nCódigo: ' + res.codigo + '\nCaducidad: ' + res.caducidad);
+        document.getElementById('form-admin-cupon').reset();
+        cargarAdminDash();
+      }
+    }).generarCuponPersonalizadoConDias(empId, desc, dias);
+  }
+
+  function marcarUsadoAdmin(codigo) {
+    google.script.run.withSuccessHandler(function() { cargarAdminDash(); }).marcarCuponUsado(codigo);
+  }
+
+  function borrarCuponAdmin(cuponId) {
+    if (confirm('¿Eliminar este cupón del sistema?')) {
+      google.script.run.withSuccessHandler(function() { cargarAdminDash(); }).eliminarCupon(cuponId);
+    }
+  }
+<\/script>

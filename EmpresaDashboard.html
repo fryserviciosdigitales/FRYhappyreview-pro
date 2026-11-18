@@ -1,0 +1,313 @@
+<div class="card">
+  <div class="card">
+    <h2>📈 Evolución de Valoraciones</h2>
+    <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1rem;">
+      Evolución de valoraciones registradas por mes.
+    </p>
+    <canvas id="grafica-evolucion" style="width:100%;max-height:350px;"></canvas>
+    <br>
+    <div class="card">
+      <h2>😊 Satisfacción de Clientes</h2>
+      <div style="max-width:350px;margin:auto;">
+        <canvas id="grafica-satisfaccion"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <br>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:1rem;">
+    <div>
+      <h2 id="emp-dash-titulo" style="margin-bottom:.25rem;">Cargando Panel...</h2>
+      <p style="color:var(--text-muted);font-size:.85rem;">
+        Estadísticas en tiempo real y rendimiento de fidelización
+      </p>
+    </div>
+
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+      <button class="btn btn-outline" onclick="copiarEnlaceCliente(usuarioActual.empresaId)">
+        🔗 Copiar Enlace QR
+      </button>
+      <button class="btn btn-primary" onclick="abrirModalCartelPorEmpresa(usuarioActual.empresaId)">
+        🖨️ Imprimir Cartel QR
+      </button>
+    </div>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-title">Valoraciones Totales</div>
+      <div class="metric-value" id="emp-m-val">0</div>
+      <div class="metric-sub font-bold" id="emp-m-media">⭐ 0.0 media</div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-title">Índice de Satisfacción</div>
+      <div class="metric-value" id="emp-m-sat">0%</div>
+      <div class="metric-sub" id="emp-m-pos-neg">0 positivas / 0 privadas</div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-title">Cupones Emitidos</div>
+      <div class="metric-value" id="emp-m-cup-emit">0</div>
+      <div class="metric-sub" id="emp-m-cup-usados">0 canjeados</div>
+    </div>
+  </div>
+</div>
+
+<br>
+
+<div class="grid-2">
+  <div class="card">
+    <h2>📊 Distribución de Valoraciones</h2>
+    <div id="ratings-breakdown" style="margin-top:1rem;"></div>
+  </div>
+
+  <div class="card">
+    <h2>⚠️ Incidencias Privadas</h2>
+    <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:1rem;">
+      Valoraciones inferiores a 4 estrellas que requieren seguimiento.
+    </p>
+    <div id="incidencias-container" style="max-height:300px;overflow-y:auto;"></div>
+  </div>
+</div>
+
+<br>
+
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+    <h2>💬 Últimas Valoraciones Recibidas</h2>
+    <span style="font-size:.75rem;color:var(--text-muted);">Últimas 5 valoraciones</span>
+  </div>
+  <div id="ultimas-valoraciones">
+    <p style="color:var(--text-muted);">Cargando valoraciones...</p>
+  </div>
+</div>
+
+<br>
+
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem;">
+    <div>
+      <h2>🎁 Registro de Cupones Emitidos</h2>
+      <p style="font-size:.8rem;color:var(--text-muted);margin-top:4px;">
+        Todos los cupones generados automáticamente por HappyReview.
+      </p>
+    </div>
+    <button class="btn btn-sm btn-outline" onclick="cargarEmpresaDash()">🔄 Actualizar</button>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Recompensa</th>
+          <th>Caducidad</th>
+          <th>Estado</th>
+          <th style="text-align:right;">Acción</th>
+        </tr>
+      </thead>
+      <tbody id="cupones-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<br>
+
+<div class="card" style="background:linear-gradient(135deg,#eef2ff 0%,#faf5ff 100%);">
+  <h2 style="margin-bottom:10px;">🚀 Próximamente</h2>
+  <ul style="margin-left:20px;line-height:1.9;">
+    <li>Resumen IA de comentarios</li>
+    <li>Evolución mensual de satisfacción</li>
+    <li>Ranking de recompensas más usadas</li>
+    <li>Exportación PDF de informes</li>
+  </ul>
+</div>
+
+<script>
+  function cargarEmpresaDash() {
+    if (!usuarioActual) {
+      alert('Usuario no cargado');
+      return;
+    }
+
+    var empresaId = usuarioActual.empresaId;
+    if (!empresaId) {
+      alert('El usuario no tiene empresa asignada');
+      return;
+    }
+
+    google.script.run.withSuccessHandler(function(data){
+      document.getElementById('emp-dash-titulo').innerText = '📈 ' + data.nombreEmpresa;
+      document.getElementById('emp-m-val').innerText = data.totalValoraciones;
+      document.getElementById('emp-m-media').innerText = '⭐ ' + data.media + ' media global';
+      document.getElementById('emp-m-sat').innerText = data.satisfaccion + '%';
+      document.getElementById('emp-m-pos-neg').innerText = data.positivas + ' positivas / ' + data.negativas + ' privadas';
+      document.getElementById('emp-m-cup-emit').innerText = data.cuponesEmitidos;
+      document.getElementById('emp-m-cup-usados').innerText = data.cuponesUsados + ' canjeados';
+
+      var ultimas = document.getElementById('ultimas-valoraciones');
+      if (ultimas) {
+        ultimas.innerHTML = '';
+        if (!data.comentarios || data.comentarios.length === 0) {
+          ultimas.innerHTML = '<p style="color:var(--text-muted)">Sin valoraciones todavía</p>';
+        } else {
+          for (var i = 0; i < Math.min(data.comentarios.length, 5); i++) {
+            var c = data.comentarios[i];
+            ultimas.innerHTML +=
+              '<div style="padding:14px;border-bottom:1px solid #e5e7eb;">' +
+              '<strong>' + c.estrellas + ' ⭐</strong><br>' +
+              '<span style="font-size:.9rem;">' + (c.comentario || 'Sin comentario') + '</span><br>' +
+              '<small style="color:#64748b;">' + c.fecha + '</small>' +
+              '</div>';
+          }
+        }
+      }
+
+      var total = data.totalValoraciones || 1;
+      var breakdown = document.getElementById('ratings-breakdown');
+      if (breakdown) {
+        breakdown.innerHTML = '';
+        var estrellas = [
+          { n:5, c:data.c5, col:'#22c55e' },
+          { n:4, c:data.c4, col:'#84cc16' },
+          { n:3, c:data.c3, col:'#eab308' },
+          { n:2, c:data.c2, col:'#f97316' },
+          { n:1, c:data.c1, col:'#ef4444' }
+        ];
+
+        for (var x = 0; x < estrellas.length; x++) {
+          var e = estrellas[x];
+          var pct = Math.round((e.c / total) * 100);
+          breakdown.innerHTML +=
+            '<div style="display:flex;align-items:center;margin-bottom:10px;">' +
+            '<span style="width:60px;">' + e.n + ' ⭐</span>' +
+            '<div style="flex:1;height:10px;background:#e5e7eb;border-radius:12px;margin:0 10px;">' +
+            '<div style="height:100%;width:' + pct + '%;background:' + e.col + ';border-radius:12px;"></div>' +
+            '</div>' +
+            '<span>' + e.c + '</span>' +
+            '</div>';
+        }
+      }
+
+      var incidencias = document.getElementById('incidencias-container');
+      if (incidencias) {
+        incidencias.innerHTML = '';
+        if (data.incidencias.length === 0) {
+          incidencias.innerHTML = '<p style="color:#22c55e;padding:1rem;">🎉 No existen incidencias registradas.</p>';
+        } else {
+          for (var y = 0; y < data.incidencias.length; y++) {
+            var inc = data.incidencias[y];
+            incidencias.innerHTML +=
+              '<div style="background:#fff1f2;padding:12px;border-left:4px solid #ef4444;margin-bottom:10px;border-radius:8px;">' +
+              '<strong>' + inc.estrellas + ' ⭐</strong><br>' +
+              '<small>' + (inc.email || 'Anónimo') + '</small><br><br>' +
+              (inc.comentario || 'Sin comentario') +
+              '</div>';
+          }
+        }
+      }
+
+      var tbody = document.getElementById('cupones-tbody');
+      if (tbody) {
+        tbody.innerHTML = '';
+        if (!data.cuponesLista || data.cuponesLista.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="text-center">No existen cupones emitidos</td></tr>';
+        } else {
+          for (var z = 0; z < data.cuponesLista.length; z++) {
+            var cpn = data.cuponesLista[z];
+            tbody.innerHTML +=
+              '<tr>' +
+              '<td><strong>' + cpn.codigo + '</strong></td>' +
+              '<td>' + cpn.descuento + '</td>' +
+              '<td>' + cpn.caducidad + '</td>' +
+              '<td>' + (cpn.usado ? '✅ Canjeado' : '🟢 Disponible') + '</td>' +
+              '<td style="text-align:right;">' +
+              (!cpn.usado ? '<button class="btn btn-sm btn-success" onclick="marcarCuponUsado(\'' + cpn.codigo + '\')">Canjear</button>' : '-') +
+              '</td>' +
+              '</tr>';
+          }
+        }
+      }
+
+      cargarGraficaEmpresa();
+      cargarGraficaSatisfaccion(data.positivas, data.negativas);
+    }).withFailureHandler(function(error){
+      console.error(error);
+      alert('Error cargando dashboard');
+    }).obtenerMetricasEmpresa(empresaId);
+  }
+
+  function cargarGraficaEmpresa() {
+    google.script.run.withSuccessHandler(function(datos){
+      var canvas = document.getElementById('grafica-evolucion');
+      if (!canvas) return;
+      if (window.grafEmpresa) window.grafEmpresa.destroy();
+
+      window.grafEmpresa = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: datos.labels,
+          datasets: [{
+            label: 'Valoraciones',
+            data: datos.values,
+            borderColor: '#4f46e5',
+            backgroundColor: 'rgba(79,70,229,.15)',
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+    }).obtenerEvolucionEmpresa(usuarioActual.empresaId);
+  }
+
+  function cargarGraficaSatisfaccion(positivas, negativas) {
+    var canvas = document.getElementById('grafica-satisfaccion');
+    if (!canvas) return;
+    if (window.grafSatisfaccion) window.grafSatisfaccion.destroy();
+
+    window.grafSatisfaccion = new Chart(canvas, {
+      type: 'doughnut',
+      data: {
+        labels: ['Positivas', 'Incidencias'],
+        datasets: [{
+          data: [positivas, negativas],
+          backgroundColor: ['#22c55e', '#ef4444']
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+    });
+  }
+
+  function marcarCuponUsado(codigo) {
+    if (confirm('¿Confirmas que el cliente ha presentado el código ' + codigo + ' en el establecimiento?')) {
+      google.script.run.withSuccessHandler(function(res) {
+        if (res.success) {
+          cargarEmpresaDash();
+        } else {
+          alert('Error al actualizar el cupón.');
+        }
+      }).marcarCuponUsado(codigo);
+    }
+  }
+
+  function copiarEnlaceCliente(empId) {
+    var netlifyDomain = 'https://happyreviewpro.netlify.app';
+    var url = netlifyDomain + '/?id=' + empId;
+    navigator.clipboard.writeText(url).then(function() {
+      alert('¡Enlace QR del cliente copiado al portapapeles!');
+    }, function() {
+      prompt('Copia este enlace:', url);
+    });
+  }
+<\/script>
