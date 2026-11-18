@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0">
+
+<title>
+HAPPYREVIEW PRO
+</title>
+
+<link
+  rel="stylesheet"
+  href="css/styles.css">
+
+</head>
+
+<body>
+
+<div id="app">
+
+  <div id="loading">
+
+    Cargando establecimiento...
+
+  </div>
+
+  <div
+    id="rating-container"
+    class="hidden">
+
+    <h1 id="empresa-nombre">
+
+      Establecimiento
+
+    </h1>
+
+    <p>
+
+      ¿Cómo ha sido tu experiencia?
+
+    </p>
+
+    <div
+      id="stars">
+
+      <span class="star" onclick="votar(1)">★</span>
+      <span class="star" onclick="votar(2)">★</span>
+      <span class="star" onclick="votar(3)">★</span>
+      <span class="star" onclick="votar(4)">★</span>
+      <span class="star" onclick="votar(5)">★</span>
+
+    </div>
+
+    <div
+      id="feedback-container"
+      class="hidden">
+
+      <textarea
+        id="comentario"
+        placeholder="¿Qué podemos mejorar?">
+      </textarea>
+
+      <input
+        id="email"
+        type="email"
+        placeholder="Tu email (opcional)">
+
+      <button
+        onclick="enviarFeedback()">
+
+        Enviar Opinión
+
+      </button>
+
+    </div>
+
+  </div>
+
+  <div
+    id="success-container"
+    class="hidden">
+
+    <h2>
+
+      🎉 Muchas gracias
+
+    </h2>
+
+    <div
+      id="coupon-box"
+      class="hidden">
+
+      <h3>
+
+        Tu recompensa
+
+      </h3>
+
+      <p id="coupon-code"></p>
+
+      <p id="coupon-desc"></p>
+
+    </div>
+
+    <a
+      id="google-btn"
+      target="_blank"
+      class="hidden">
+
+      🌟 Dejar reseña en Google
+
+    </a>
+
+  </div>
+
+</div>
+
+<script src="js/api.js"></script>
+
+<script>
+
+const params =
+  new URLSearchParams(
+    window.location.search
+  );
+
+const empresaId =
+  params.get("id");
+
+let empresa =
+  null;
+
+let estrellas =
+  0;
+
+iniciar();
+
+async function iniciar(){
+
+  if(!empresaId){
+
+    document
+      .getElementById(
+        "loading"
+      )
+
+      .innerText =
+
+      "Empresa no encontrada";
+
+    return;
+
+  }
+
+  const r =
+
+    await api(
+
+      "getEmpresa",
+
+      {
+
+        id:
+          empresaId
+
+      }
+
+    );
+
+  if(
+
+    !r.success
+
+  ){
+
+    document
+      .getElementById(
+        "loading"
+      )
+
+      .innerText =
+
+      "Empresa no disponible";
+
+    return;
+
+  }
+
+  empresa =
+    r.empresa;
+
+  document
+    .getElementById(
+      "loading"
+    )
+    .classList
+    .add(
+      "hidden"
+    );
+
+  document
+    .getElementById(
+      "rating-container"
+    )
+    .classList
+    .remove(
+      "hidden"
+    );
+
+  document
+    .getElementById(
+      "empresa-nombre"
+    )
+    .innerText =
+
+    empresa.nombre;
+
+}
+
+function votar(n){
+
+  estrellas = n;
+
+  const stars =
+
+    document
+      .querySelectorAll(
+        ".star"
+      );
+
+  stars.forEach(function(s,i){
+
+    if(i < n){
+
+      s.classList.add(
+        "active"
+      );
+
+    }
+
+    else{
+
+      s.classList.remove(
+        "active"
+      );
+
+    }
+
+  });
+
+  if(
+
+    n >= 4
+
+  ){
+
+    enviarValoracion(
+      ""
+    );
+
+  }
+
+  else{
+
+    document
+      .getElementById(
+        "feedback-container"
+      )
+      .classList
+      .remove(
+        "hidden"
+      );
+
+  }
+
+}
+
+function enviarFeedback(){
+
+  enviarValoracion(
+
+    document
+      .getElementById(
+        "comentario"
+      )
+      .value
+
+  );
+
+}
+
+async function enviarValoracion(
+
+  comentario
+
+){
+
+  const email =
+
+    document
+      .getElementById(
+        "email"
+      )
+
+    ?
+
+      document
+        .getElementById(
+          "email"
+        )
+        .value
+
+    :
+
+      "";
+
+  const r =
+
+    await api(
+
+      "votar",
+
+      {
+
+        id:
+          empresaId,
+
+        estrellas:
+          estrellas,
+
+        comentario:
+          comentario,
+
+        email:
+          email
+
+      }
+
+    );
+
+  document
+    .getElementById(
+      "rating-container"
+    )
+    .classList
+    .add(
+      "hidden"
+    );
+
+  document
+    .getElementById(
+      "success-container"
+    )
+    .classList
+    .remove(
+      "hidden"
+    );
+
+  if(
+
+    r.cupon
+
+  ){
+
+    document
+      .getElementById(
+        "coupon-box"
+      )
+      .classList
+      .remove(
+        "hidden"
+      );
+
+    document
+      .getElementById(
+        "coupon-code"
+      )
+      .innerText =
+
+      r.cupon.codigo;
+
+    document
+      .getElementById(
+        "coupon-desc"
+      )
+      .innerText =
+
+      r.cupon.descuento;
+
+  }
+
+  if(
+
+    empresa &&
+    empresa.googleUrl &&
+    estrellas >= 4
+
+  ){
+
+    const btn =
+
+      document
+        .getElementById(
+          "google-btn"
+        );
+
+    btn.href =
+      empresa.googleUrl;
+
+    btn.classList
+      .remove(
+        "hidden"
+      );
+
+  }
+
+}
+
+</script>
+
+</body>
+
+</html>
