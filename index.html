@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HAPPYREVIEW PRO - SaaS de Reputación</title>
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #0f172a; }
+    iframe { width: 100%; height: 100%; border: none; display: block; }
+  </style>
+</head>
+<body>
+  <iframe id="app-frame" src=""></iframe>
+  <script>
+    // URL de tu despliegue web de Google Apps Script
+    var gasUrl = "https://script.google.com/macros/s/AKfycbxnOp3XeFIi3xXiB-_wPwkyuFfex9MOWRFg5ClCdt4G6lMCcHe4-DY97lYyf5d4hkf5Kg/exec";
+    
+    // Reenvía automáticamente los parámetros (?id=... o ?panel=...) al iframe de Google
+    var queryParams = window.location.search;
+    document.getElementById("app-frame").src = gasUrl + queryParams;
+  </script>
+</body>
+</html>
