@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0">
+
+<title>
+
+Panel Empresa
+
+</title>
+
+<link
+  rel="stylesheet"
+  href="css/styles.css">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+
+<header>
+
+  <h1>
+    HAPPYREVIEW PRO
+  </h1>
+
+  <button
+    class="btn btn-danger"
+    onclick="cerrarSesion()">
+
+    Cerrar sesión
+
+  </button>
+
+</header>
+
+<div class="container">
+
+  <div class="card">
+
+    <h2 id="empresa-nombre">
+
+      Cargando...
+
+    </h2>
+
+    <p>
+
+      Panel del establecimiento
+
+    </p>
+
+  </div>
+
+  <div class="metrics-grid">
+
+    <div class="metric-card">
+
+      <div class="metric-title">
+        Valoraciones
+      </div>
+
+      <div
+        class="metric-value"
+        id="m-total">
+
+        0
+
+      </div>
+
+    </div>
+
+    <div class="metric-card pos">
+
+      <div class="metric-title">
+        Satisfacción
+      </div>
+
+      <div
+        class="metric-value"
+        id="m-sat">
+
+        0%
+
+      </div>
+
+    </div>
+
+    <div class="metric-card">
+
+      <div class="metric-title">
+        Media
+      </div>
+
+      <div
+        class="metric-value"
+        id="m-media">
+
+        0
+
+      </div>
+
+    </div>
+
+    <div class="metric-card">
+
+      <div class="metric-title">
+        Cupones Emitidos
+      </div>
+
+      <div
+        class="metric-value"
+        id="m-cupones">
+
+        0
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="card">
+
+    <h2>
+
+      Distribución
+
+    </h2>
+
+    <canvas
+      id="grafica">
+
+    </canvas>
+
+  </div>
+
+  <div class="card">
+
+    <h2>
+
+      Últimas Valoraciones
+
+    </h2>
+
+    <div
+      id="comentarios">
+
+    </div>
+
+  </div>
+
+  <div class="card">
+
+    <h2>
+
+      Cupones
+
+    </h2>
+
+    <table>
+
+      <thead>
+
+        <tr>
+
+          <th>Código</th>
+          <th>Recompensa</th>
+          <th>Estado</th>
+
+        </tr>
+
+      </thead>
+
+      <tbody id="cupones">
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
+
+<script src="js/api.js"></script>
+
+<script src="js/empresa.js"></script>
+
+</body>
+
+</html>
