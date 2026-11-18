@@ -8,16 +8,10 @@ API.JS
 const API_URL =
 'https://script.google.com/macros/s/AKfycbxnOp3XeFIi3xXiB-_wPwkyuFfex9MOWRFg5ClCdt4G6lMCcHe4-DY97lYyf5d4hkf5Kg/exec';
 
-/*
-====================================
-LLAMADA GENÉRICA
-====================================
-*/
-
 async function api(
   action,
   data = {}
-){
+) {
 
   const params =
     new URLSearchParams();
@@ -54,21 +48,18 @@ async function api(
 
 /*
 ====================================
-EMPRESA
+EMPRESAS
 ====================================
 */
 
-async function getEmpresa(
-  empresaId
-){
+async function getEmpresa(id){
 
   return await api(
 
     'getEmpresa',
 
     {
-      id:
-        empresaId
+      id:id
     }
 
   );
@@ -79,20 +70,6 @@ async function getEmpresas(){
 
   return await api(
     'getEmpresas'
-  );
-
-}
-
-async function crearEmpresa(
-  datos
-){
-
-  return await api(
-
-    'crearEmpresa',
-
-    datos
-
   );
 
 }
@@ -113,13 +90,8 @@ async function login(
     'login',
 
     {
-
-      email:
-        email,
-
-      password:
-        password
-
+      email,
+      password
     }
 
   );
@@ -150,17 +122,13 @@ async function enviarValoracion(
 
     {
 
-      id:
-        empresaId,
+      id:empresaId,
 
-      estrellas:
-        estrellas,
+      estrellas:estrellas,
 
-      comentario:
-        comentario,
+      comentario:comentario,
 
-      email:
-        email
+      email:email
 
     }
 
@@ -170,12 +138,12 @@ async function enviarValoracion(
 
 /*
 ====================================
-EMPRESA DASHBOARD
+EMPRESA
 ====================================
 */
 
 async function getMetricasEmpresa(
-  empresaId
+  id
 ){
 
   return await api(
@@ -183,10 +151,7 @@ async function getMetricasEmpresa(
     'getMetricasEmpresa',
 
     {
-
-      id:
-        empresaId
-
+      id:id
     }
 
   );
@@ -194,7 +159,7 @@ async function getMetricasEmpresa(
 }
 
 async function getCuponesEmpresa(
-  empresaId
+  id
 ){
 
   return await api(
@@ -202,10 +167,7 @@ async function getCuponesEmpresa(
     'getCuponesEmpresa',
 
     {
-
-      id:
-        empresaId
-
+      id:id
     }
 
   );
@@ -214,7 +176,7 @@ async function getCuponesEmpresa(
 
 /*
 ====================================
-ADMIN DASHBOARD
+ADMIN
 ====================================
 */
 
@@ -234,42 +196,12 @@ async function getUsuarios(){
 
 }
 
-/*
-====================================
-EMPRESAS
-====================================
-*/
-
-async function toggleEmpresa(
-  empresaId
-){
-
-  return await api(
-
-    'toggleActivo',
-
-    {
-
-      id:
-        empresaId
-
-    }
-
-  );
-
-}
-
-/*
-====================================
-UTILS
-====================================
-*/
-
 function getParam(
   nombre
 ){
 
   const params =
+
     new URLSearchParams(
       window.location.search
     );
