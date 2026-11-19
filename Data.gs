@@ -3,6 +3,36 @@
  * Operaciones CRUD optimizadas con escritura asegurada
  */
 
+function esValorActivo(valor) {
+  if (valor === true || valor === 1) return true;
+  var txt = String(valor === undefined || valor === null ? '' : valor).trim().toLowerCase();
+  return txt === 'true' || txt === 'activa' || txt === 'activo' || txt === 'sí' || txt === 'si' || txt === '1';
+}
+
+function esValorBooleanoTrue(valor) {
+  return valor === true || valor === 1 || String(valor === undefined || valor === null ? '' : valor).trim().toLowerCase() === 'true';
+}
+
+function parsearFechaLocal(valorFecha) {
+  if (!valorFecha) return null;
+  if (Object.prototype.toString.call(valorFecha) === '[object Date]') {
+    if (isNaN(valorFecha.getTime())) return null;
+    return new Date(valorFecha.getFullYear(), valorFecha.getMonth(), valorFecha.getDate());
+  }
+  var str = String(valorFecha).trim();
+  var matchIso = /^(\d{4})-(\d{2})-(\d{2})/.exec(str);
+  if (matchIso) {
+    return new Date(Number(matchIso[1]), Number(matchIso[2]) - 1, Number(matchIso[3]));
+  }
+  var matchEs = /^(\d{2})\/(\d{2})\/(\d{4})/.exec(str);
+  if (matchEs) {
+    return new Date(Number(matchEs[3]), Number(matchEs[2]) - 1, Number(matchEs[1]));
+  }
+  var d = new Date(str);
+  if (isNaN(d.getTime())) return null;
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
 function crearEmpresa(nombre, email, telefono, googleUrl, plan, recompensa) {
   var ss = getDB();
   var sh = ss.getSheetByName('EMPRESAS');
@@ -41,7 +71,7 @@ function obtenerEmpresas() {
         telefono: String(rows[i][3] || ''),
         googleUrl: String(rows[i][4] || ''),
         plan: String(rows[i][5] || ''),
-        activo: rows[i][6] === true || String(rows[i][6]).toLowerCase() === 'true',
+        activo: esValorActivo(rows[i][6]),
         fechaAlta: String(rows[i][7] || ''),
         recompensa: String(rows[i][8] || '10% de descuento')
       });
@@ -51,9 +81,11 @@ function obtenerEmpresas() {
 }
 
 function obtenerEmpresaPorId(id) {
+  if (!id) return null;
+  var idBuscado = String(id).trim();
   var empresas = obtenerEmpresas();
   for (var i = 0; i < empresas.length; i++) {
-    if (String(empresas[i].id).trim() === String(id).trim()) {
+    if (String(empresas[i].id).trim() === idBuscado) {
       return empresas[i];
     }
   }
@@ -169,51 +201,68 @@ function eliminarUsuario(email) {
 }
 
 function guardarValoracion(empresaId, estrellas, comentario, emailCliente) {
+  var empresa = obtenerEmpresaPorId(empresaId);
+  if (!empresa || !empresa.activo) {
+    return { success: false, error: 'Establecimiento no disponible' };
+  }
+
+  var numEstrellas = Number(estrellas);
+  if (!numEstrellas || numEstrellas < 1 || numEstrellas > 5) {
+    return { success: false, error: 'Valoración no válida' };
+  }
+
   var ss = getDB();
   var shVal = ss.getSheetByName('VALORACIONES');
   var valId = 'VAL_' + new Date().getTime();
   var fecha = new Date().toISOString();
-  shVal.appendRow([valId, empresaId, Number(estrellas), String(comentario || ''), String(emailCliente || ''), fecha]);
+  shVal.appendRow([valId, empresa.id, numEstrellas, String(comentario || '').trim(), String(emailCliente || '').trim(), fecha]);
   SpreadsheetApp.flush();
   
-  var empresa = obtenerEmpresaPorId(empresaId);
-  
-  if (Number(estrellas) >= 4) {
-    var cuponRes = generarCuponPersonalizadoConDias(empresaId, empresa ? empresa.recompensa : '10% de descuento', 5);
+  if (numEstrellas >= 4) {
+    var cuponRes = generarCuponPersonalizadoConDias(empresa.id, empresa.recompensa || '10% de descuento', 5);
     if (emailCliente && String(emailCliente).includes('@')) {
-      enviarEmailCupon(emailCliente, empresa ? empresa.nombre : 'Establecimiento', cuponRes.codigo, cuponRes.descuento, cuponRes.caducidad);
+      enviarEmailCupon(emailCliente, empresa.nombre, cuponRes.codigo, cuponRes.descuento, cuponRes.caducidad);
     }
     return { success: true, cupon: cuponRes };
   } else {
-    if (empresa && empresa.email) {
-      enviarEmailIncidencia(empresa.email, empresa.nombre, estrellas, comentario, emailCliente);
+    if (empresa.email) {
+      enviarEmailIncidencia(empresa.email, empresa.nombre, numEstrellas, comentario, emailCliente);
     }
     return { success: true };
   }
 }
 
 function registrarClickGoogle(empresaId, estrellas) {
+  var empresa = obtenerEmpresaPorId(empresaId);
+  if (!empresa) return { success: false };
   var ss = getDB();
   var shG = ss.getSheetByName('GOOGLE');
   var id = 'G_' + new Date().getTime();
   var fecha = new Date().toISOString();
-  shG.appendRow([id, empresaId, Number(estrellas), fecha]);
+  shG.appendRow([id, empresa.id, Number(estrellas || 5), fecha]);
   SpreadsheetApp.flush();
   return { success: true };
 }
 
 function generarCuponPersonalizadoConDias(empresaId, recompensaTexto, diasValidez) {
+  var empresa = obtenerEmpresaPorId(empresaId);
+  if (!empresa) {
+    return { success: false, error: 'Empresa no encontrada' };
+  }
+
   var ss = getDB();
   var shC = ss.getSheetByName('CUPONES');
-  var codigo = 'HAPPY-' + Math.floor(1000 + Math.random() * 9000);
-  var id = 'CUP_' + new Date().getTime();
+  var ahoraMs = new Date().getTime();
+  var sufijo = String(ahoraMs).slice(-3) + Math.floor(Math.random() * 10);
+  var codigo = 'HAPPY-' + Math.floor(1000 + Math.random() * 9000) + sufijo;
+  var id = 'CUP_' + ahoraMs;
   var dias = Number(diasValidez) || 5;
   var fechaCad = new Date();
   fechaCad.setDate(fechaCad.getDate() + dias);
 
   var caducidad = Utilities.formatDate(fechaCad, Session.getScriptTimeZone(), 'yyyy-MM-dd');
 
-  shC.appendRow([id, empresaId, codigo, String(recompensaTexto), caducidad, false]);
+  shC.appendRow([id, empresa.id, codigo, String(recompensaTexto), caducidad, false]);
   SpreadsheetApp.flush();
 
   return {
@@ -225,26 +274,29 @@ function generarCuponPersonalizadoConDias(empresaId, recompensaTexto, diasValide
 }
 
 function obtenerCuponesEmpresa(empresaId) {
+  if (!empresaId) return [];
   var ss = getDB();
   var sh = ss.getSheetByName('CUPONES');
   var rows = sh.getDataRange().getValues();
   var lista = [];
-  var hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
+  var ahora = new Date();
+  var hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
 
   for (var i = 1; i < rows.length; i++) {
-    if (String(rows[i][1]).trim() === String(empresaId).trim()) {
-      var fechaCad = new Date(rows[i][4]);
-      fechaCad.setHours(0, 0, 0, 0);
-      var caducado = fechaCad < hoy;
+    if (String(rows[i][1] || '').trim() === String(empresaId).trim()) {
+      var fechaCad = parsearFechaLocal(rows[i][4]);
+      var caducado = fechaCad ? (fechaCad < hoy) : false;
+      var fechaFormateada = fechaCad
+        ? Utilities.formatDate(fechaCad, Session.getScriptTimeZone(), 'dd/MM/yyyy')
+        : String(rows[i][4] || '');
 
       lista.push({
         id: String(rows[i][0]),
         empresaId: String(rows[i][1]),
         codigo: String(rows[i][2]),
         descuento: String(rows[i][3]),
-        caducidad: Utilities.formatDate(fechaCad, Session.getScriptTimeZone(), 'dd/MM/yyyy'),
-        usado: Boolean(rows[i][5]),
+        caducidad: fechaFormateada,
+        usado: esValorBooleanoTrue(rows[i][5]),
         caducado: caducado
       });
     }
@@ -264,15 +316,17 @@ function obtenerTodosLosCuponesAdmin() {
   }
 
   var lista = [];
-  var hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
+  var ahora = new Date();
+  var hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
 
   for (var i = 1; i < rowsC.length; i++) {
-    if (String(rowsC[i][0]).trim() !== '') {
-      var fechaCad = new Date(rowsC[i][4]);
-      fechaCad.setHours(0, 0, 0, 0);
-      var caducado = fechaCad < hoy;
-      var eId = String(rowsC[i][1]);
+    if (String(rowsC[i][0] || '').trim() !== '') {
+      var fechaCad = parsearFechaLocal(rowsC[i][4]);
+      var caducado = fechaCad ? (fechaCad < hoy) : false;
+      var fechaFormateada = fechaCad
+        ? Utilities.formatDate(fechaCad, Session.getScriptTimeZone(), 'dd/MM/yyyy')
+        : String(rowsC[i][4] || '');
+      var eId = String(rowsC[i][1] || '').trim();
 
       lista.push({
         id: String(rowsC[i][0]),
@@ -280,8 +334,8 @@ function obtenerTodosLosCuponesAdmin() {
         nombreEmpresa: mapaEmpresas[eId] || 'Empresa',
         codigo: String(rowsC[i][2]),
         descuento: String(rowsC[i][3]),
-        caducidad: Utilities.formatDate(fechaCad, Session.getScriptTimeZone(), 'dd/MM/yyyy'),
-        usado: Boolean(rowsC[i][5]),
+        caducidad: fechaFormateada,
+        usado: esValorBooleanoTrue(rowsC[i][5]),
         caducado: caducado
       });
     }
@@ -289,18 +343,23 @@ function obtenerTodosLosCuponesAdmin() {
   return lista.reverse();
 }
 
-function marcarCuponUsado(codigo) {
+function marcarCuponUsado(codigo, empresaIdSolicitante) {
   var ss = getDB();
   var sh = ss.getSheetByName('CUPONES');
   var rows = sh.getDataRange().getValues();
-  var hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
+  var ahora = new Date();
+  var hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
 
   for (var i = 1; i < rows.length; i++) {
-    if (String(rows[i][2]).trim() === String(codigo).trim()) {
-      var fechaCad = new Date(rows[i][4]);
-      fechaCad.setHours(0, 0, 0, 0);
-      if (fechaCad < hoy) {
+    if (String(rows[i][2] || '').trim() === String(codigo).trim()) {
+      if (empresaIdSolicitante && String(rows[i][1] || '').trim() !== String(empresaIdSolicitante).trim()) {
+        return { success: false, error: 'No autorizado para este cupón' };
+      }
+      if (esValorBooleanoTrue(rows[i][5])) {
+        return { success: false, error: 'El cupón ya fue canjeado' };
+      }
+      var fechaCad = parsearFechaLocal(rows[i][4]);
+      if (fechaCad && fechaCad < hoy) {
         return { success: false, error: 'Cupón caducado' };
       }
       sh.getRange(i + 1, 6).setValue(true);
@@ -326,12 +385,13 @@ function eliminarCupon(cuponId) {
 }
 
 function exportarValoracionesCSV(empresaId) {
+  if (!empresaId) return '';
   var ss = getDB();
   var vals = ss.getSheetByName('VALORACIONES').getDataRange().getValues();
   var csv = 'ID,EmpresaID,Estrellas,Comentario,Email,Fecha\n';
   
   for (var i = 1; i < vals.length; i++) {
-    if (String(vals[i][1]).trim() === String(empresaId).trim()) {
+    if (String(vals[i][1] || '').trim() === String(empresaId).trim()) {
       csv += '"' + vals[i][0] + '","' + vals[i][1] + '","' + vals[i][2] + '","' + String(vals[i][3]).replace(/"/g, '""') + '","' + vals[i][4] + '","' + vals[i][5] + '"\n';
     }
   }
@@ -368,7 +428,7 @@ function obtenerMetricasAdmin() {
 
     try {
       var fechaVal = new Date(vals[i][5]);
-      if (fechaVal.getMonth() === mesActual && fechaVal.getFullYear() === anioActual) {
+      if (!isNaN(fechaVal.getTime()) && fechaVal.getMonth() === mesActual && fechaVal.getFullYear() === anioActual) {
         valoracionesMes++;
       }
     } catch(err){}
@@ -381,7 +441,7 @@ function obtenerMetricasAdmin() {
   var recompensas = {};
 
   for (var i = 1; i < cups.length; i++) {
-    var usado = Boolean(cups[i][5]);
+    var usado = esValorBooleanoTrue(cups[i][5]);
     var recompensa = String(cups[i][3]);
     if (usado) {
       cuponesUsados++;
@@ -411,7 +471,7 @@ function obtenerMetricasAdmin() {
   }
 
   for (var i = 1; i < vals.length; i++) {
-    var eId = String(vals[i][1]);
+    var eId = String(vals[i][1] || '').trim();
     if (ranking[eId]) {
       ranking[eId].total++;
       ranking[eId].suma += Number(vals[i][2]);
@@ -419,7 +479,7 @@ function obtenerMetricasAdmin() {
   }
 
   for (var i = 1; i < ggls.length; i++) {
-    var eId = String(ggls[i][1]);
+    var eId = String(ggls[i][1] || '').trim();
     if (ranking[eId]) {
       ranking[eId].google++;
     }
@@ -458,6 +518,23 @@ function obtenerMetricasAdmin() {
 }
 
 function obtenerMetricasEmpresa(empresaId) {
+  if (!empresaId) {
+    return {
+      nombreEmpresa: 'Empresa no encontrada',
+      totalValoraciones: 0,
+      media: 0,
+      positivas: 0,
+      negativas: 0,
+      satisfaccion: 0,
+      c5: 0, c4: 0, c3: 0, c2: 0, c1: 0,
+      cuponesEmitidos: 0,
+      cuponesUsados: 0,
+      incidencias: [],
+      comentarios: [],
+      cuponesLista: []
+    };
+  }
+
   var ss = getDB();
   var empresa = obtenerEmpresaPorId(empresaId);
 
@@ -479,7 +556,7 @@ function obtenerMetricasEmpresa(empresaId) {
   }
 
   var vals = ss.getSheetByName('VALORACIONES').getDataRange().getValues();
-  var cups = obtenerCuponesEmpresa(empresaId);
+  var cups = obtenerCuponesEmpresa(empresa.id);
 
   var totalVal = 0;
   var suma = 0;
@@ -490,7 +567,7 @@ function obtenerMetricasEmpresa(empresaId) {
   var comentarios = [];
 
   for (var i = 1; i < vals.length; i++) {
-    if (String(vals[i][1] || '').trim() === String(empresaId || '').trim()) {
+    if (String(vals[i][1] || '').trim() === String(empresa.id || '').trim()) {
       totalVal++;
       var est = Number(vals[i][2] || 0);
       suma += est;
@@ -558,15 +635,18 @@ function obtenerRespuestaSugerida(estrellas, comentario) {
 }
 
 function obtenerEvolucionEmpresa(empresaId) {
+  if (!empresaId) return { labels: [], values: [] };
   var ss = getDB();
   var vals = ss.getSheetByName('VALORACIONES').getDataRange().getValues();
   var meses = {};
 
   for (var i = 1; i < vals.length; i++) {
-    if (String(vals[i][1]).trim() === String(empresaId).trim()) {
+    if (String(vals[i][1] || '').trim() === String(empresaId).trim()) {
       var fecha = new Date(vals[i][5]);
-      var clave = Utilities.formatDate(fecha, Session.getScriptTimeZone(), 'MM/yyyy');
-      meses[clave] = (meses[clave] || 0) + 1;
+      if (!isNaN(fecha.getTime())) {
+        var clave = Utilities.formatDate(fecha, Session.getScriptTimeZone(), 'MM/yyyy');
+        meses[clave] = (meses[clave] || 0) + 1;
+      }
     }
   }
 
