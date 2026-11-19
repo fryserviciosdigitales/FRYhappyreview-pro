@@ -4,7 +4,7 @@
  */
 
 function hashSHA256(texto) {
-  texto = String(texto || '');
+  texto = String(texto === undefined || texto === null ? '' : texto);
   var rawHash = Utilities.computeDigest(
     Utilities.DigestAlgorithm.SHA_256,
     texto,
@@ -28,14 +28,22 @@ function hashSHA256(texto) {
 function autenticarUsuario(email, password) {
   var ss = getDB();
   var sh = ss.getSheetByName('USUARIOS');
+  if (!sh) {
+    return {
+      success: false,
+      error: 'No se encontró la hoja de usuarios'
+    };
+  }
+
   var rows = sh.getDataRange().getValues();
   var passHash = hashSHA256(password);
+  var emailBuscado = String(email || '').trim().toLowerCase();
 
   for (var i = 1; i < rows.length; i++) {
     var dbEmail = String(rows[i][0] || '').trim().toLowerCase();
     var dbPass = String(rows[i][1] || '');
 
-    if (dbEmail === String(email).trim().toLowerCase() && dbPass === passHash) {
+    if (dbEmail && dbEmail === emailBuscado && dbPass === passHash) {
       return {
         success: true,
         usuario: {
@@ -65,23 +73,24 @@ function validarLogin(email, password) {
  * Email cupón recompensa
  */
 function enviarEmailCupon(emailCliente, nombreEmpresa, codigo, descuento, caducidad) {
-  if (!emailCliente || String(emailCliente).indexOf('@') === -1) return;
+  var destino = String(emailCliente || '').trim();
+  if (!destino || destino.indexOf('@') === -1) return;
 
-  var asunto = '🎁 Tu regalo de ' + nombreEmpresa;
+  var asunto = '🎁 Tu regalo de ' + String(nombreEmpresa || '');
   var html =
     '<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:20px;">' +
     '<h2 style="color:#4f46e5;">¡Gracias por tu valoración!</h2>' +
     '<p>Has recibido una recompensa especial por compartir tu experiencia.</p>' +
     '<div style="border:2px dashed #22c55e;padding:20px;text-align:center;border-radius:10px;background:#f0fdf4;">' +
-    '<h3 style="margin:0;color:#22c55e;">' + descuento + '</h3>' +
-    '<p style="font-size:22px;font-weight:bold;">' + codigo + '</p>' +
-    '<p>Válido hasta: ' + caducidad + '</p>' +
+    '<h3 style="margin:0;color:#22c55e;">' + String(descuento || '') + '</h3>' +
+    '<p style="font-size:22px;font-weight:bold;">' + String(codigo || '') + '</p>' +
+    '<p>Válido hasta: ' + String(caducidad || '') + '</p>' +
     '</div>' +
     '<p>Presenta este código en tu próxima visita.</p>' +
     '</div>';
 
   try {
-    GmailApp.sendEmail(emailCliente, asunto, 'Tu cliente de correo no admite HTML', { htmlBody: html });
+    GmailApp.sendEmail(destino, asunto, 'Tu cliente de correo no admite HTML', { htmlBody: html });
   } catch (err) {
     Logger.log('Error email cupón: ' + err);
   }
@@ -91,19 +100,20 @@ function enviarEmailCupon(emailCliente, nombreEmpresa, codigo, descuento, caduci
  * Email incidencia negativa
  */
 function enviarEmailIncidencia(emailEmpresa, nombreEmpresa, estrellas, comentario, emailCliente) {
-  if (!emailEmpresa) return;
+  var destino = String(emailEmpresa || '').trim();
+  if (!destino || destino.indexOf('@') === -1) return;
 
-  var asunto = '⚠️ Incidencia privada recibida - ' + nombreEmpresa;
+  var asunto = '⚠️ Incidencia privada recibida - ' + String(nombreEmpresa || '');
   var cuerpo =
     'Se ha recibido una valoración negativa.\n\n' +
-    'Empresa: ' + nombreEmpresa + '\n\n' +
-    'Estrellas: ' + estrellas + '\n\n' +
-    'Cliente: ' + (emailCliente || 'Anónimo') + '\n\n' +
-    'Comentario:\n' + (comentario || 'Sin comentario') + '\n\n' +
+    'Empresa: ' + String(nombreEmpresa || '') + '\n\n' +
+    'Estrellas: ' + String(estrellas || '') + '\n\n' +
+    'Cliente: ' + (String(emailCliente || '').trim() || 'Anónimo') + '\n\n' +
+    'Comentario:\n' + (String(comentario || '').trim() || 'Sin comentario') + '\n\n' +
     'HAPPYREVIEW PRO';
 
   try {
-    GmailApp.sendEmail(emailEmpresa, asunto, cuerpo);
+    GmailApp.sendEmail(destino, asunto, cuerpo);
   } catch (err) {
     Logger.log('Error email incidencia: ' + err);
   }
