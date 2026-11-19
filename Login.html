@@ -1,13 +1,127 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
   <head>
-    <base target="_top">
-    <?!= include('Css'); ?>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAPPYREVIEW PRO</title>
+    <style>
+      :root {
+        --primary: #4f46e5;
+        --primary-hover: #4338ca;
+        --success: #22c55e;
+        --danger: #ef4444;
+        --text: #0f172a;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --bg: #f8fafc;
+        --radius: 12px;
+        --shadow-subtle: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+      }
+      .hidden { display: none !important; }
+      .text-center { text-align: center; }
+      .card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        margin-bottom: 1.25rem;
+        box-shadow: var(--shadow-subtle);
+      }
+      .form-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+      .form-group { margin-bottom: 1rem; }
+      .form-group label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 0.35rem;
+      }
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 0.65rem 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 0.92rem;
+        background: #ffffff;
+      }
+      .btn {
+        border: none;
+        border-radius: 8px;
+        padding: 0.7rem 1rem;
+        font-weight: 600;
+        font-size: 0.92rem;
+        cursor: pointer;
+        background: var(--primary);
+        color: #ffffff;
+      }
+      .btn-primary { background: var(--primary); color: #ffffff; }
+      .btn-secondary { background: #e2e8f0; color: #0f172a; }
+      .btn-success { background: var(--success); color: #ffffff; }
+      .btn-danger { background: var(--danger); color: #ffffff; }
+      .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text); }
+      .btn-sm { padding: 0.35rem 0.65rem; font-size: 0.8rem; }
+      .form-actions { display: flex; gap: 0.75rem; align-items: center; }
+      header {
+        background: #ffffff;
+        border-bottom: 1px solid var(--border-color);
+        padding: 0.9rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+      header h1 { font-size: 1.25rem; color: var(--primary); }
+      .nav-actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+      .nav-btn {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 0.45rem 0.8rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        color: var(--text);
+      }
+      .container { max-width: 1160px; margin: 0 auto; padding: 1.5rem; }
+      .table-container { width: 100%; overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; }
+      th, td { padding: 0.7rem 0.75rem; border-bottom: 1px solid var(--border-color); text-align: left; font-size: 0.88rem; }
+      .badge { padding: 0.2rem 0.55rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
+      .badge-premium { background: #fef3c7; color: #92400e; }
+      .badge-active { background: #dcfce7; color: #166534; }
+      .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.55);
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+        z-index: 1000;
+      }
+      .modal-content {
+        background: #ffffff;
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        width: 100%;
+        max-height: 92vh;
+        overflow-y: auto;
+      }
+    </style>
   </head>
   <body>
 
     <!-- PANTALLA DE LOGIN -->
-    <div id="auth-screen" style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+    <div id="auth-screen" style="display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 1rem;">
       <div class="card" style="width: 100%; max-width: 400px; text-align: left;">
         <div class="text-center" style="margin-bottom: 1.5rem;">
           <h2 style="color: var(--primary); font-size: 1.8rem; margin-bottom: 0.25rem;">HAPPYREVIEW PRO</h2>
@@ -42,15 +156,15 @@
           </div>
           <div id="empresa-nav" class="hidden">
             <button class="nav-btn" onclick="navegar('empresa-dash')">📈 Mi Panel</button>
-            <button class="nav-btn" onclick="abrirModalCartelPorEmpresa(usuarioActual.empresaId)">🖨️ Ver QR y Cartel</button>
+            <button class="nav-btn" onclick="abrirModalCartelPorEmpresa(usuarioActual && usuarioActual.empresaId)">🖨️ Ver QR y Cartel</button>
           </div>
           <button class="nav-btn" onclick="cerrarSesion()" style="border-color: #fca5a5; color: #dc2626; background: #fef2f2;">Cerrar Sesión</button>
         </div>
       </header>
 
       <div class="container">
-        <div id="view-admin-dash" class="hidden"><?!= include('AdminDashboard'); ?></div>
-        <div id="view-empresas" class="hidden"><?!= include('Empresas'); ?></div>
+        <div id="view-admin-dash" class="hidden"></div>
+        <div id="view-empresas" class="hidden"></div>
         
         <div id="view-usuarios" class="hidden">
           <div class="card">
@@ -114,7 +228,7 @@
           </div>
         </div>
 
-        <div id="view-empresa-dash" class="hidden"><?!= include('EmpresaDashboard'); ?></div>
+        <div id="view-empresa-dash" class="hidden"></div>
       </div>
     </div>
 
@@ -141,14 +255,26 @@
     </div>
 
     <script>
+      var gasUrl = "https://script.google.com/macros/s/AKfycbyh5EuURGrICHOQaaayQM6enInHwfBuz4Lc0qgWcFTeajKPv-asfuUb_xYgp22PHPro2g/exec";
       var usuarioActual = null;
-      var githubAppDomain = 'https://fryserviciosdigitales.github.io/FRYhappyreview-pro'; //
-      var directEmpresaId = '<?= directEmpresaId ?>';
+      var githubAppDomain = 'https://fryserviciosdigitales.github.io/FRYhappyreview-pro';
+      var directEmpresaId = '';
+      try {
+        directEmpresaId = String(new URLSearchParams(window.location.search).get('panel') || '').trim();
+      } catch (e) {}
       var listaUsuariosGlobal = [];
+
+      function llamarApi(paramsObj) {
+        var qs = Object.keys(paramsObj).map(function(k) {
+          return encodeURIComponent(k) + '=' + encodeURIComponent(paramsObj[k] !== undefined && paramsObj[k] !== null ? paramsObj[k] : '');
+        }).join('&');
+        return fetch(gasUrl + '?' + qs).then(function(res) { return res.json(); });
+      }
 
       window.onload = function() {
         if (directEmpresaId) {
           usuarioActual = { email: 'portal@empresa.com', nombre: 'Portal Establecimiento', rol: 'EMPRESA', empresaId: directEmpresaId };
+          document.getElementById('auth-screen').style.display = 'none';
           document.getElementById('auth-screen').classList.add('hidden');
           document.getElementById('app-screen').classList.remove('hidden');
           document.getElementById('user-display-name').innerText = 'Portal Directo';
@@ -164,17 +290,19 @@
         var errDiv = document.getElementById('login-error');
         errDiv.style.display = 'none';
 
-        google.script.run
-          .withSuccessHandler(function(res){
+        llamarApi({ action: 'login', email: email, password: pass })
+          .then(function(res) {
             if (!res || !res.success) {
-              errDiv.innerText = res && res.error ? res.error : 'Credenciales incorrectas';
+              errDiv.innerText = (res && res.error) ? res.error : 'Credenciales incorrectas';
               errDiv.style.display = 'block';
               return;
             }
             usuarioActual = res.usuario;
+            document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('auth-screen').classList.add('hidden');
             document.getElementById('app-screen').classList.remove('hidden');
-            document.getElementById('user-display-name').innerText = usuarioActual.nombre + ' (' + usuarioActual.rol + ')';
+            document.getElementById('user-display-name').innerText =
+              (usuarioActual.nombre || usuarioActual.email || '') + ' (' + (usuarioActual.rol || '') + ')';
 
             if (usuarioActual.rol === 'ADMIN') {
               document.getElementById('admin-nav').classList.remove('hidden');
@@ -188,22 +316,22 @@
               navegar('empresa-dash');
             }
           })
-          .withFailureHandler(function(error){
+          .catch(function(error) {
             console.error(error);
             errDiv.innerText = 'Error de conexión';
             errDiv.style.display = 'block';
-          })
-          .validarLogin(email, pass);
+          });
       }
 
       function cerrarSesion() {
         usuarioActual = null;
         if (directEmpresaId) {
-          window.top.location.href = githubAppDomain + '/'; //[cite: 5]
+          window.top.location.href = githubAppDomain + '/';
           return;
         }
         document.getElementById('app-screen').classList.add('hidden');
         document.getElementById('auth-screen').classList.remove('hidden');
+        document.getElementById('auth-screen').style.display = 'flex';
         document.getElementById('admin-nav').classList.add('hidden');
         document.getElementById('empresa-nav').classList.add('hidden');
         document.getElementById('login-password').value = '';
@@ -217,60 +345,65 @@
 
         if (vista === 'admin-dash') {
           document.getElementById('view-admin-dash').classList.remove('hidden');
-          cargarAdminDash();
+          if (typeof cargarAdminDash === 'function') cargarAdminDash();
         } else if (vista === 'empresas-view') {
           document.getElementById('view-empresas').classList.remove('hidden');
-          cargarEmpresasAdmin();
+          if (typeof cargarEmpresasAdmin === 'function') cargarEmpresasAdmin();
         } else if (vista === 'usuarios-view') {
           document.getElementById('view-usuarios').classList.remove('hidden');
           cargarUsuariosAdmin();
         } else if (vista === 'empresa-dash') {
           document.getElementById('view-empresa-dash').classList.remove('hidden');
-          cargarEmpresaDash();
+          if (typeof cargarEmpresaDash === 'function') cargarEmpresaDash();
         }
       }
 
       function cargarUsuariosAdmin() {
-        google.script.run.withSuccessHandler(function(empresas){
-          var selectEmp = document.getElementById('usr-empresa-id');
-          if (!selectEmp) return;
-          selectEmp.innerHTML = '<option value="">-- Selecciona empresa --</option>';
-          for (var i = 0; i < empresas.length; i++) {
-            selectEmp.innerHTML += '<option value="' + empresas[i].id + '">' + empresas[i].nombre + '</option>';
-          }
-        }).obtenerEmpresas();
+        llamarApi({ action: 'getEmpresas' })
+          .then(function(data) {
+            var empresas = (data && data.empresas) ? data.empresas : [];
+            var selectEmp = document.getElementById('usr-empresa-id');
+            if (!selectEmp) return;
+            selectEmp.innerHTML = '<option value="">-- Selecciona empresa --</option>';
+            for (var i = 0; i < empresas.length; i++) {
+              selectEmp.innerHTML += '<option value="' + empresas[i].id + '">' + empresas[i].nombre + '</option>';
+            }
+          })
+          .catch(function(err) { console.error(err); });
 
-        google.script.run.withSuccessHandler(function(usuarios){
-          listaUsuariosGlobal = usuarios || [];
-          var tbody = document.getElementById('usuarios-tbody');
-          if (!tbody) return;
-          tbody.innerHTML = '';
+        llamarApi({ action: 'getUsuarios' })
+          .then(function(data) {
+            listaUsuariosGlobal = (data && data.usuarios) ? data.usuarios : [];
+            var tbody = document.getElementById('usuarios-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
 
-          if (listaUsuariosGlobal.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center">No hay usuarios registrados.</td></tr>';
-            return;
-          }
+            if (listaUsuariosGlobal.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="5" class="text-center">No hay usuarios registrados.</td></tr>';
+              return;
+            }
 
-          for (var i = 0; i < listaUsuariosGlobal.length; i++) {
-            var u = listaUsuariosGlobal[i];
-            tbody.innerHTML +=
-              '<tr>' +
-              '<td><strong>' + u.nombre + '</strong></td>' +
-              '<td>' + u.email + '</td>' +
-              '<td><span class="badge ' + (u.rol === 'ADMIN' ? 'badge-premium' : 'badge-active') + '">' + u.rol + '</span></td>' +
-              '<td>' + (u.empresaId || '-') + '</td>' +
-              '<td style="text-align:right;">' +
-              '<button class="btn btn-sm btn-outline" style="margin-right:4px;" onclick="prepararEdicionUsuario(\'' + u.email + '\')">Editar</button>' +
-              (u.email.toLowerCase() !== 'fryserviciosdigitales@gmail.com'
-                ? '<button class="btn btn-sm btn-danger" onclick="eliminarUsuario(\'' + u.email + '\')">Eliminar</button>'
-                : '<span style="font-size:.8rem;color:var(--text-muted);">Sistema</span>') +
-              '</td>' +
-              '</tr>';
-          }
-        }).withFailureHandler(function(error){
-          console.error(error);
-          alert(error.message);
-        }).obtenerUsuarios();
+            for (var i = 0; i < listaUsuariosGlobal.length; i++) {
+              var u = listaUsuariosGlobal[i];
+              tbody.innerHTML +=
+                '<tr>' +
+                '<td><strong>' + u.nombre + '</strong></td>' +
+                '<td>' + u.email + '</td>' +
+                '<td><span class="badge ' + (u.rol === 'ADMIN' ? 'badge-premium' : 'badge-active') + '">' + u.rol + '</span></td>' +
+                '<td>' + (u.empresaId || '-') + '</td>' +
+                '<td style="text-align:right;">' +
+                '<button class="btn btn-sm btn-outline" style="margin-right:4px;" onclick="prepararEdicionUsuario(\'' + u.email + '\')">Editar</button>' +
+                (String(u.email || '').toLowerCase() !== 'fryserviciosdigitales@gmail.com'
+                  ? '<button class="btn btn-sm btn-danger" onclick="eliminarUsuario(\'' + u.email + '\')">Eliminar</button>'
+                  : '<span style="font-size:.8rem;color:var(--text-muted);">Sistema</span>') +
+                '</td>' +
+                '</tr>';
+            }
+          })
+          .catch(function(error) {
+            console.error(error);
+            alert(error.message || 'Error al cargar usuarios');
+          });
       }
 
       function cambiarRolSelect() {
@@ -282,7 +415,7 @@
       function prepararEdicionUsuario(email) {
         var usr = null;
         for (var i = 0; i < listaUsuariosGlobal.length; i++) {
-          if (listaUsuariosGlobal[i].email.toLowerCase() === email.toLowerCase()) {
+          if (String(listaUsuariosGlobal[i].email || '').toLowerCase() === String(email || '').toLowerCase()) {
             usr = listaUsuariosGlobal[i];
             break;
           }
@@ -329,49 +462,67 @@
         }
 
         if (emailOriginal) {
-          google.script.run.withSuccessHandler(function(res) {
-            if (res.success) {
+          llamarApi({
+            action: 'editarUsuario',
+            emailOriginal: emailOriginal,
+            nombre: nombre,
+            email: email,
+            rol: rol,
+            empresaId: rol === 'ADMIN' ? '' : empresaId,
+            password: password
+          }).then(function(res) {
+            if (res && res.success) {
               resetFormUsuario();
               cargarUsuariosAdmin();
               alert('Usuario actualizado correctamente.');
             } else {
-              alert(res.error);
+              alert((res && res.error) ? res.error : 'No se pudo actualizar el usuario');
             }
-          }).editarUsuario(emailOriginal, nombre, email, rol, empresaId, password);
+          });
         } else {
           if (!password) {
             alert('Ingresa una contraseña.');
             return;
           }
-          google.script.run.withSuccessHandler(function(res) {
-            if (res.success) {
+          llamarApi({
+            action: 'crearUsuario',
+            email: email,
+            password: password,
+            nombre: nombre,
+            rol: rol,
+            empresaId: rol === 'ADMIN' ? '' : empresaId
+          }).then(function(res) {
+            if (res && res.success) {
               resetFormUsuario();
               cargarUsuariosAdmin();
               alert('Usuario creado correctamente.');
             } else {
-              alert(res.error);
+              alert((res && res.error) ? res.error : 'No se pudo crear el usuario');
             }
-          }).crearUsuario(email, password, nombre, rol, rol === 'ADMIN' ? '' : empresaId);
+          });
         }
       }
 
       function eliminarUsuario(email) {
         if (confirm('¿Estás seguro de eliminar este usuario?')) {
-          google.script.run.withSuccessHandler(function() { cargarUsuariosAdmin(); }).eliminarUsuario(email);
+          llamarApi({ action: 'eliminarUsuario', email: email }).then(function() {
+            cargarUsuariosAdmin();
+          });
         }
       }
 
       function abrirModalCartelPorEmpresa(empId) {
-        google.script.run.withSuccessHandler(function(emp) {
+        llamarApi({ action: 'getEmpresa', id: empId }).then(function(data) {
+          var emp = data && data.empresa ? data.empresa : null;
           var nombreEmpresa = emp ? emp.nombre : 'Establecimiento';
           document.getElementById('poster-empresa-nombre').innerText = nombreEmpresa;
-          var targetUrl = githubAppDomain + '/?id=' + encodeURIComponent(empId); //[cite: 5]
+          var targetUrl = githubAppDomain + '/?id=' + encodeURIComponent(empId);
           var qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=' + encodeURIComponent(targetUrl);
-          
+
           document.getElementById('qr-modal-img-container').innerHTML = '<img src="' + qrApiUrl + '" alt="Código QR" style="width:200px; height:200px; display:block; margin:0 auto;">';
           document.getElementById('qr-modal-url').innerText = targetUrl;
           document.getElementById('modal-cartel').style.display = 'flex';
-        }).obtenerEmpresaPorId(empId);
+        });
       }
 
       function cerrarModalCartel() {
@@ -382,7 +533,7 @@
         var contenido = document.getElementById('printable-poster').innerHTML;
         var ventanaImpresion = window.open('', '', 'height=700,width=700');
         ventanaImpresion.document.write('<html><head><title>Cartel QR - HAPPYREVIEW PRO</title>');
-        ventanaImpresion.document.write('<style>body { font-family: Plus Jakarta Sans, Arial, sans-serif; text-align: center; padding: 30px; }</style>');
+        ventanaImpresion.document.write('<style>body { font-family: Arial, sans-serif; text-align: center; padding: 30px; }</style>');
         ventanaImpresion.document.write('</head><body>');
         ventanaImpresion.document.write('<div style="border: 4px solid #4f46e5; border-radius: 16px; padding: 40px; max-width: 500px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">' + contenido + '</div>');
         ventanaImpresion.document.write('</body></html>');
@@ -393,8 +544,8 @@
           ventanaImpresion.close();
         }, 500);
       }
-    <\/script>
+    </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </body>
 </html>
