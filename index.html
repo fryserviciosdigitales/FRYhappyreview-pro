@@ -2,8 +2,8 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>HAPPYREVIEW PRO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAPPYREVIEW PRO - SaaS de Reputación</title>
     <style>
       :root {
         --primary: #4f46e5;
@@ -15,319 +15,1352 @@
         --border-color: #e2e8f0;
         --bg: #f8fafc;
         --radius: 12px;
-        --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        --shadow-subtle: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
       }
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         background: var(--bg);
         color: var(--text);
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
         min-height: 100vh;
-        padding: 1rem;
       }
+      .hidden { display: none !important; }
+      .text-center { text-align: center; }
+      .font-bold { font-weight: 700; }
       .card {
         background: #ffffff;
         border: 1px solid var(--border-color);
         border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        padding: 2rem;
-        width: 100%;
-        max-width: 480px;
-        text-align: center;
+        padding: 1.5rem;
+        margin-bottom: 1.25rem;
+        box-shadow: var(--shadow-subtle);
       }
-      .hidden { display: none !important; }
-      .form-group { margin-bottom: 1rem; text-align: left; }
+      .form-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+      .form-group { margin-bottom: 1rem; }
       .form-group label {
         display: block;
-        margin-bottom: 0.35rem;
         font-size: 0.85rem;
         font-weight: 600;
-        color: var(--text);
+        margin-bottom: 0.35rem;
       }
       .form-group input,
-      .form-group textarea {
+      .form-group select {
         width: 100%;
-        padding: 0.75rem;
+        padding: 0.65rem 0.75rem;
         border: 1px solid var(--border-color);
         border-radius: 8px;
         font-family: inherit;
-        font-size: 0.95rem;
-        color: var(--text);
+        font-size: 0.92rem;
         background: #ffffff;
+      }
+      .checkbox-container {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+      }
+      .checkbox-container input[type="checkbox"] {
+        width: auto;
       }
       .btn {
         border: none;
         border-radius: 8px;
-        cursor: pointer;
-        font-size: 1rem;
+        padding: 0.7rem 1rem;
         font-weight: 600;
-        padding: 0.85rem 1rem;
-        transition: opacity 0.2s ease, background-color 0.2s ease;
-        width: 100%;
+        font-size: 0.92rem;
+        cursor: pointer;
+        background: var(--primary);
+        color: #ffffff;
       }
-      .btn:disabled { opacity: 0.6; cursor: not-allowed; }
       .btn-primary { background: var(--primary); color: #ffffff; }
-      .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+      .btn-secondary { background: #e2e8f0; color: #0f172a; }
       .btn-success { background: var(--success); color: #ffffff; }
-      .msg-error {
-        color: var(--danger);
-        font-size: 0.88rem;
-        margin-top: 0.75rem;
-        text-align: center;
+      .btn-danger { background: var(--danger); color: #ffffff; }
+      .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text); }
+      .btn-sm { padding: 0.35rem 0.65rem; font-size: 0.8rem; }
+      .form-actions { display: flex; gap: 0.75rem; align-items: center; }
+      header {
+        background: #ffffff;
+        border-bottom: 1px solid var(--border-color);
+        padding: 0.9rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+      header h1 { font-size: 1.25rem; color: var(--primary); }
+      .nav-actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+      .nav-btn {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 0.45rem 0.8rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        color: var(--text);
+      }
+      .container { max-width: 1160px; margin: 0 auto; padding: 1.5rem; }
+      .table-container { width: 100%; overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; }
+      th, td { padding: 0.7rem 0.75rem; border-bottom: 1px solid var(--border-color); text-align: left; font-size: 0.88rem; }
+      .badge { display: inline-block; padding: 0.2rem 0.55rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
+      .badge-premium { background: #fef3c7; color: #92400e; }
+      .badge-standard { background: #e0e7ff; color: #3730a3; }
+      .badge-active { background: #dcfce7; color: #166534; }
+      .badge-inactive { background: #fee2e2; color: #991b1b; }
+      .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 1rem;
+      }
+      .metric-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-left: 4px solid var(--primary);
+        border-radius: var(--radius);
+        padding: 1rem 1.15rem;
+        box-shadow: var(--shadow-subtle);
+      }
+      .metric-card.warn { border-left-color: #f59e0b; }
+      .metric-card.pos { border-left-color: var(--success); }
+      .metric-card p, .metric-title {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        margin-bottom: 0.35rem;
+      }
+      .metric-card h3, .metric-value {
+        font-size: 1.55rem;
+        font-weight: 700;
+        color: var(--text);
+      }
+      .metric-sub {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        margin-top: 0.25rem;
+      }
+      .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.25rem;
+      }
+      .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.55);
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+        z-index: 1000;
+      }
+      .modal-content {
+        background: #ffffff;
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        width: 100%;
+        max-height: 92vh;
+        overflow-y: auto;
       }
     </style>
   </head>
   <body>
 
-    <div class="card" id="app-card">
-
-      <!-- INICIO DE SESIÓN (cuando no hay ?id=...) -->
-      <div id="login-view" class="hidden">
-        <h1 style="color: var(--primary); font-size: 1.55rem; margin-bottom: 0.25rem;">HAPPYREVIEW PRO</h1>
-        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Plataforma SaaS de Reputación y Fidelización</p>
-
-        <form id="login-form" onsubmit="iniciarSesion(event)">
+    <!-- PANTALLA DE LOGIN -->
+    <div id="auth-screen" style="display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 1rem;">
+      <div class="card" style="width: 100%; max-width: 400px; text-align: left;">
+        <div class="text-center" style="margin-bottom: 1.5rem;">
+          <h2 style="color: var(--primary); font-size: 1.8rem; margin-bottom: 0.25rem;">HAPPYREVIEW PRO</h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Plataforma SaaS de Reputación y Fidelización</p>
+        </div>
+        
+        <form id="login-form" onsubmit="procesarLogin(event)">
           <div class="form-group">
-            <label for="login-email">CORREO ELECTRÓNICO</label>
-            <input id="login-email" type="email" required autocomplete="username" placeholder="correo@ejemplo.com">
+            <label>Correo Electrónico</label>
+            <input type="email" id="login-email" required value="fryserviciosdigitales@gmail.com">
           </div>
           <div class="form-group">
-            <label for="login-password">CONTRASEÑA</label>
-            <input id="login-password" type="password" required autocomplete="current-password" placeholder="••••••••">
+            <label>Contraseña</label>
+            <input type="password" id="login-password" required value="123456">
           </div>
-          <button id="btn-login" type="submit" class="btn btn-primary" style="margin-top: 0.25rem;">Iniciar Sesión</button>
-          <p id="login-error" class="msg-error hidden"></p>
+          <button type="submit" class="btn" id="btn-login-submit" style="width: 100%;">Iniciar Sesión</button>
         </form>
-
-        <div id="login-ok-box" class="hidden" style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border-color); text-align: left;">
-          <p id="login-usuario-info" style="font-size: 0.92rem; font-weight: 600; color: var(--text);"></p>
-        </div>
+        <div id="login-error" style="color: var(--danger); margin-top: 1rem; text-align: center; display: none; font-size: 0.9rem;"></div>
       </div>
-
-      <!-- PANTALLA DE CARGA (cuando hay ?id=...) -->
-      <div id="loading-view" class="hidden">
-        <p style="color: var(--text-muted); padding: 2rem; font-size: 0.95rem;">Cargando establecimiento...</p>
-      </div>
-
-      <!-- PANTALLA PRINCIPAL DE ESTRELLAS -->
-      <div id="main-view" class="hidden">
-        <h1 id="empresa-nombre" style="color: var(--primary); font-size: 1.5rem; margin-bottom: 0.5rem;">Establecimiento</h1>
-        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">¿Cómo calificarías tu experiencia hoy con nosotros?</p>
-
-        <div id="stars-container" style="display: flex; justify-content: center; gap: 8px; margin-bottom: 1.5rem; cursor: pointer;">
-          <span class="star" data-value="1" style="font-size: 2.5rem; color: #cbd5e1; transition: color 0.2s;" onclick="seleccionarEstrellas(1)">★</span>
-          <span class="star" data-value="2" style="font-size: 2.5rem; color: #cbd5e1; transition: color 0.2s;" onclick="seleccionarEstrellas(2)">★</span>
-          <span class="star" data-value="3" style="font-size: 2.5rem; color: #cbd5e1; transition: color 0.2s;" onclick="seleccionarEstrellas(3)">★</span>
-          <span class="star" data-value="4" style="font-size: 2.5rem; color: #cbd5e1; transition: color 0.2s;" onclick="seleccionarEstrellas(4)">★</span>
-          <span class="star" data-value="5" style="font-size: 2.5rem; color: #cbd5e1; transition: color 0.2s;" onclick="seleccionarEstrellas(5)">★</span>
-        </div>
-
-        <p id="enviando-estado" class="hidden" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">Registrando tu valoración...</p>
-
-        <div id="feedback-section" class="hidden" style="text-align: left; margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
-          <div class="form-group">
-            <label style="font-size: 0.85rem; font-weight: bold; color: var(--danger);">¿Qué podríamos haber hecho mejor?</label>
-            <textarea id="comentario-cliente" rows="3" placeholder="Cuéntanos tu experiencia de forma privada..."></textarea>
-          </div>
-          <div class="form-group">
-            <label style="font-size: 0.85rem;">Tu email (opcional):</label>
-            <input type="email" id="email-cliente" placeholder="tu@email.com">
-          </div>
-          <button id="btn-enviar-privado" class="btn btn-primary" style="margin-top: 0.5rem;" onclick="enviarValoracionPrivada()">Enviar Opinión</button>
-        </div>
-      </div>
-
-      <!-- PANTALLA DE ÉXITO Y CUPÓN -->
-      <div id="success-view" class="hidden">
-        <h2 style="color: var(--success); margin-bottom: 0.5rem; font-size: 1.5rem;">¡Muchas gracias! 🎉</h2>
-        <p id="success-message" style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;"></p>
-
-        <div id="coupon-box" class="hidden" style="background: #f0fdf4; border: 2px dashed var(--success); padding: 15px; border-radius: 8px; margin-bottom: 1.5rem;">
-          <p style="font-size: 0.8rem; color: #166534; font-weight: bold; margin-bottom: 5px; letter-spacing: 0.5px;">CUPÓN DE REGALO EXCLUSIVO:</p>
-          <h3 id="coupon-code" style="font-family: monospace; font-size: 1.4rem; color: var(--success); margin: 0;"></h3>
-          <p id="coupon-desc" style="font-size: 0.85rem; color: #166534; font-weight: 600; margin-top: 5px;"></p>
-          <p id="coupon-expiry" style="font-size: 0.8rem; color: #15803d; margin-top: 6px; font-weight: 500;"></p>
-        </div>
-
-        <a id="btn-google-redirect" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-success hidden" style="text-decoration: none; display: block; text-align: center; padding: 12px; margin-bottom: 1rem; font-weight: bold;">🌟 Dejar reseña en Google Maps</a>
-      </div>
-
-      <!-- PANTALLA DE ERROR / NO DISPONIBLE -->
-      <div id="error-view" class="hidden">
-        <h2 style="color: var(--danger); margin-bottom: 0.5rem; font-size: 1.3rem;">Establecimiento no disponible</h2>
-        <p id="error-message" style="color: var(--text-muted); font-size: 0.9rem;">El enlace QR no es válido, ha caducado o el establecimiento está inactivo.</p>
-      </div>
-
     </div>
 
+    <!-- PANTALLA APLICACIÓN (SPA) -->
+    <div id="app-screen" class="hidden">
+      <header>
+        <h1>HAPPYREVIEW PRO</h1>
+        <div class="nav-actions">
+          <span id="user-display-name" style="font-size: 0.9rem; font-weight: 500; margin-right: 0.5rem; color: var(--text-muted);"></span>
+          <div id="admin-nav" class="hidden">
+            <button class="nav-btn" onclick="navegar('admin-dash')">📊 Dashboard</button>
+            <button class="nav-btn" onclick="navegar('empresas-view')">🏢 Empresas</button>
+            <button class="nav-btn" onclick="navegar('usuarios-view')">👤 Usuarios</button>
+          </div>
+          <div id="empresa-nav" class="hidden">
+            <button class="nav-btn" onclick="navegar('empresa-dash')">📈 Mi Panel</button>
+            <button class="nav-btn" onclick="abrirModalCartelPorEmpresa(usuarioActual && usuarioActual.empresaId)">🖨️ Ver QR y Cartel</button>
+          </div>
+          <button class="nav-btn" onclick="cerrarSesion()" style="border-color: #fca5a5; color: #dc2626; background: #fef2f2;">Cerrar Sesión</button>
+        </div>
+      </header>
+
+      <div class="container">
+        <!-- VISTA ADMIN DASHBOARD -->
+        <div id="view-admin-dash" class="hidden">
+          <div class="card" style="background: linear-gradient(135deg,#0f172a 0%,#1e293b 100%); color:#fff; border:none;">
+            <h2 style="color:#fff;margin-bottom:0.5rem;">👑 Panel de Administración Global</h2>
+            <p style="color:rgba(255,255,255,.75);font-size:.95rem;">Resumen general, control global de cupones y gestión de establecimientos SaaS.</p>
+          </div>
+
+          <div class="metrics-grid">
+            <div class="metric-card"><p>Empresas Activas</p><h3 id="adm-empresas-activas">0</h3></div>
+            <div class="metric-card warn"><p>Empresas Premium</p><h3 id="adm-empresas-premium">0</h3></div>
+            <div class="metric-card"><p>Total Valoraciones</p><h3 id="adm-total-val">0</h3></div>
+            <div class="metric-card pos"><p>Media Global</p><h3 id="adm-media-global">0</h3></div>
+            <div class="metric-card"><p>Clicks Google</p><h3 id="adm-google-clicks">0</h3></div>
+            <div class="metric-card pos"><p>Cupones Emitidos</p><h3 id="adm-cupones">0</h3></div>
+            <div class="metric-card"><p>Cupones Canjeados</p><h3 id="adm-cupones-usados">0</h3></div>
+            <div class="metric-card pos"><p>Tasa de Canje</p><h3 id="adm-tasa-canje">0%</h3></div>
+            <div class="metric-card warn"><p>Incidencias Privadas</p><h3 id="adm-incidencias">0</h3></div>
+            <div class="metric-card"><p>Valoraciones Mes</p><h3 id="adm-val-mes">0</h3></div>
+          </div>
+
+          <br>
+
+          <div class="card">
+            <h2>🏆 Métrica Comercial Destacada</h2>
+            <div style="display:flex;justify-content:center;align-items:center;padding:30px;text-align:center;">
+              <div>
+                <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:10px;">Recompensa más utilizada por los clientes</p>
+                <h2 id="adm-top-recompensa" style="color:var(--primary);margin:0;">Sin datos</h2>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>🎟️ Emisión Global de Cupones</h2>
+            <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1.25rem;">Selecciona un establecimiento y emite un cupón personalizado.</p>
+            <form id="form-admin-cupon" onsubmit="emitirCuponAdmin(event)">
+              <div class="form-row">
+                <div class="form-group" style="flex:2;">
+                  <label>Seleccionar Empresa</label>
+                  <select id="adm-cp-empresa" required></select>
+                </div>
+                <div class="form-group" style="flex:2;">
+                  <label>Recompensa</label>
+                  <input type="text" id="adm-cp-desc" required placeholder="Ej. Refresco Gratis / 20% Descuento">
+                </div>
+                <div class="form-group" style="flex:1;">
+                  <label>Validez</label>
+                  <select id="adm-cp-dias">
+                    <option value="1">1 Día</option>
+                    <option value="3">3 Días</option>
+                    <option value="5" selected>5 Días</option>
+                    <option value="7">7 Días</option>
+                    <option value="15">15 Días</option>
+                    <option value="30">30 Días</option>
+                  </select>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary">⚡ Emitir Cupón Global</button>
+            </form>
+          </div>
+
+          <div class="card">
+            <h2>🎁 Todos los Cupones Emitidos</h2>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Empresa</th>
+                    <th>Código</th>
+                    <th>Recompensa</th>
+                    <th>Caducidad</th>
+                    <th>Estado</th>
+                    <th style="text-align:right;">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-cupones-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>📊 Ranking de Rendimiento</h2>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Empresa</th>
+                    <th>Valoraciones</th>
+                    <th>Media</th>
+                    <th>Google</th>
+                  </tr>
+                </thead>
+                <tbody id="ranking-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- VISTA EMPRESAS -->
+        <div id="view-empresas" class="hidden">
+          <div class="card" id="form-card-empresa">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+              <h2 id="empresa-form-title" style="margin-bottom: 0;">✨ Registrar Nueva Empresa</h2>
+              <span class="badge badge-premium" id="modo-edicion-badge" style="display: none;">Modo Edición Activo</span>
+            </div>
+            
+            <form id="empresa-form" onsubmit="guardarEmpresa(event)">
+              <input type="hidden" id="emp-id">
+              
+              <div class="form-row">
+                <div class="form-group" style="flex: 2;">
+                  <label>Nombre de la Empresa</label>
+                  <input type="text" id="emp-nombre" required placeholder="Ej. Restaurante La Tasca">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label>Plan SaaS</label>
+                  <select id="emp-plan">
+                    <option value="Standard">Standard</option>
+                    <option value="Premium">Premium</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group" style="flex: 1;">
+                  <label>Email de Contacto</label>
+                  <input type="email" id="emp-email" required placeholder="local@empresa.com">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label>Teléfono</label>
+                  <input type="text" id="emp-telefono" placeholder="+34 600 000 000">
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label>URL Directa de Reseñas de Google Maps</label>
+                <input type="url" id="emp-google" required placeholder="https://g.page/r/...">
+              </div>
+              
+              <div class="form-group">
+                <label>Recompensa por 4-5 Estrellas (Cupón de Fidelización)</label>
+                <input type="text" id="emp-recompensa" required value="10% de descuento en tu próxima visita" placeholder="Ej. Postre gratis / 15% descuento">
+              </div>
+              
+              <div class="form-group hidden" id="emp-activo-div">
+                <label class="checkbox-container">
+                  <input type="checkbox" id="emp-activo" checked> Empresa Activa en la plataforma
+                </label>
+              </div>
+              
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary" id="btn-guardar-empresa">Crear Empresa</button>
+                <button type="button" class="btn btn-secondary hidden" id="btn-cancelar-empresa" onclick="resetFormEmpresa()">Cancelar Edición</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+              <h2>🏢 Listado de Establecimientos y Accesos</h2>
+              <div style="display: flex; gap: 0.75rem; align-items: center;">
+                <input type="text" id="buscar-empresa-input" placeholder="🔍 Buscar empresa..." onkeyup="filtrarTablaEmpresasLocal()" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); width: 220px;">
+                <span class="badge badge-active" id="total-empresas-badge">0 registradas</span>
+                <button class="btn btn-sm btn-outline" onclick="cargarEmpresasAdmin()">🔄 Actualizar</button>
+              </div>
+            </div>
+            
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Establecimiento & Recompensa</th>
+                    <th>Contacto</th>
+                    <th>Plan / Estado</th>
+                    <th style="text-align: right;">Acciones de Gestión & QR</th>
+                  </tr>
+                </thead>
+                <tbody id="empresas-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- VISTA USUARIOS -->
+        <div id="view-usuarios" class="hidden">
+          <div class="card">
+            <h2 id="usr-form-title">✨ Crear Nuevo Usuario del Sistema</h2>
+            <form id="usuario-form" onsubmit="guardarUsuario(event)">
+              <input type="hidden" id="usr-email-original">
+              
+              <div class="form-row">
+                <div class="form-group" style="flex:1;">
+                  <label>Email (Login)</label>
+                  <input type="email" id="usr-email" required placeholder="usuario@local.com">
+                </div>
+                <div class="form-group" style="flex:1;">
+                  <label>Contraseña</label>
+                  <input type="password" id="usr-password" required placeholder="Mínimo 6 caracteres">
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group" style="flex:1;">
+                  <label>Nombre Completo</label>
+                  <input type="text" id="usr-nombre" required placeholder="Nombre Apellido">
+                </div>
+                <div class="form-group" style="flex:1;">
+                  <label>Rol</label>
+                  <select id="usr-rol" onchange="cambiarRolSelect()">
+                    <option value="EMPRESA">EMPRESA</option>
+                    <option value="ADMIN">ADMIN</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="form-group" id="usr-empresa-group">
+                <label>Asignar Empresa</label>
+                <select id="usr-empresa-id"></select>
+              </div>
+              
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary" id="btn-guardar-usuario">Crear Usuario</button>
+                <button type="button" class="btn btn-secondary hidden" id="btn-cancelar-usuario" onclick="resetFormUsuario()">Cancelar</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="card">
+            <h2>👥 Listado de Usuarios del Sistema</h2>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Empresa Asignada</th>
+                    <th style="text-align: right;">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="usuarios-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- VISTA EMPRESA DASHBOARD -->
+        <div id="view-empresa-dash" class="hidden">
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:1rem;">
+              <div>
+                <h2 id="emp-dash-titulo" style="margin-bottom:.25rem;">Cargando Panel...</h2>
+                <p style="color:var(--text-muted);font-size:.85rem;">Estadísticas en tiempo real y rendimiento de fidelización</p>
+              </div>
+              <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+                <button class="btn btn-outline" onclick="copiarEnlaceCliente(usuarioActual && usuarioActual.empresaId)">🔗 Copiar Enlace QR</button>
+                <button class="btn btn-primary" onclick="abrirModalCartelPorEmpresa(usuarioActual && usuarioActual.empresaId)">🖨️ Imprimir Cartel QR</button>
+              </div>
+            </div>
+
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <div class="metric-title">Valoraciones Totales</div>
+                <div class="metric-value" id="emp-m-val">0</div>
+                <div class="metric-sub font-bold" id="emp-m-media">⭐ 0.0 media</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-title">Índice de Satisfacción</div>
+                <div class="metric-value" id="emp-m-sat">0%</div>
+                <div class="metric-sub" id="emp-m-pos-neg">0 positivas / 0 privadas</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-title">Cupones Emitidos</div>
+                <div class="metric-value" id="emp-m-cup-emit">0</div>
+                <div class="metric-sub" id="emp-m-cup-usados">0 canjeados</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <h2>📈 Evolución de Valoraciones</h2>
+              <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1rem;">Evolución de valoraciones registradas por mes.</p>
+              <canvas id="grafica-evolucion" style="width:100%;max-height:300px;"></canvas>
+            </div>
+            <div class="card">
+              <h2>😊 Satisfacción de Clientes</h2>
+              <div style="max-width:300px;margin:auto;">
+                <canvas id="grafica-satisfaccion"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <h2>📊 Distribución de Valoraciones</h2>
+              <div id="ratings-breakdown" style="margin-top:1rem;"></div>
+            </div>
+            <div class="card">
+              <h2>⚠️ Incidencias Privadas</h2>
+              <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:1rem;">Valoraciones inferiores a 4 estrellas que requieren seguimiento.</p>
+              <div id="incidencias-container" style="max-height:300px;overflow-y:auto;"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+              <h2>💬 Últimas Valoraciones Recibidas</h2>
+              <span style="font-size:.75rem;color:var(--text-muted);">Últimas 5 valoraciones</span>
+            </div>
+            <div id="ultimas-valoraciones"><p style="color:var(--text-muted);">Cargando valoraciones...</p></div>
+          </div>
+
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem;">
+              <div>
+                <h2>🎁 Registro de Cupones Emitidos</h2>
+                <p style="font-size:.8rem;color:var(--text-muted);margin-top:4px;">Todos los cupones generados automáticamente por HappyReview.</p>
+              </div>
+              <button class="btn btn-sm btn-outline" onclick="cargarEmpresaDash()">🔄 Actualizar</button>
+            </div>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Recompensa</th>
+                    <th>Caducidad</th>
+                    <th>Estado</th>
+                    <th style="text-align:right;">Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="cupones-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL CARTEL Y QR -->
+    <div id="modal-cartel" class="modal">
+      <div class="modal-content" style="max-width: 600px;">
+        <h2>📱 Código QR & Cartel Imprimible</h2>
+        <p style="color: var(--text-muted); margin-bottom: 1rem; font-size: 0.9rem;">Previsualización del cartel para mesas y recepción:</p>
+        
+        <div id="printable-poster" style="border: 4px solid var(--primary); border-radius: var(--radius); padding: 25px; background: #fff; text-align: center; margin-bottom: 1.5rem; box-shadow: var(--shadow-subtle);">
+          <h1 id="poster-empresa-nombre" style="color: var(--primary); font-size: 24px; margin-bottom: 10px;">Nombre Establecimiento</h1>
+          <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 20px;">¡Escanea con tu cámara para dejarnos tu opinión y consigue tu regalo exclusivo!</p>
+          <div id="qr-modal-img-container" style="display: inline-block; padding: 10px; background: #fff; border: 2px solid var(--border-color); border-radius: 8px;"></div>
+          <p style="font-size: 12px; color: var(--text-muted); margin-top: 15px; font-weight: bold; letter-spacing: 0.5px;">VALORACIONES & FIDELIZACIÓN - HAPPYREVIEW PRO</p>
+        </div>
+
+        <p id="qr-modal-url" style="font-size: 0.75rem; word-break: break-all; color: var(--text-muted); margin-bottom: 1rem;"></p>
+        
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+          <button class="btn btn-success" onclick="imprimirCartelDirecto()">🖨️ Imprimir / Guardar como PDF</button>
+          <button class="btn btn-secondary" onclick="cerrarModalCartel()">Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
       var gasUrl = "https://script.google.com/macros/s/AKfycbyh5EuURGrICHOQaaayQM6enInHwfBuz4Lc0qgWcFTeajKPv-asfuUb_xYgp22PHPro2g/exec";
-      var empresaId = "";
+      var usuarioActual = null;
+      var githubAppDomain = 'https://fryserviciosdigitales.github.io/FRYhappyreview-pro';
+      var directEmpresaId = '';
       try {
-        empresaId = String(new URLSearchParams(window.location.search).get("id") || "").trim();
+        directEmpresaId = String(new URLSearchParams(window.location.search).get('panel') || '').trim();
       } catch (e) {}
+      var listaUsuariosGlobal = [];
+      window.listaEmpresasGlobal = [];
 
-      var empresaData = null;
-      var estrellasSeleccionadas = 0;
-      var enviandoVoto = false;
+      function apiGet(paramsObj) {
+        var query = Object.keys(paramsObj).map(function(k) {
+          return encodeURIComponent(k) + '=' + encodeURIComponent(paramsObj[k] !== undefined && paramsObj[k] !== null ? paramsObj[k] : '');
+        }).join('&');
+        return fetch(gasUrl + '?' + query).then(function(res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        });
+      }
 
-      function normalizarUrlExterna(url) {
-        var limpia = String(url || "").trim();
-        if (!limpia) return "";
-        if (!/^https?:\/\//i.test(limpia)) {
-          limpia = "https://" + limpia;
+      function escJs(str) {
+        return String(str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      }
+
+      function mostrarToast(mensaje) {
+        var toast = document.createElement('div');
+        toast.innerText = mensaje;
+        toast.style.cssText = 'position:fixed; bottom:20px; right:20px; background:#0f172a; color:#fff; padding:12px 24px; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.2); z-index:9999; font-size:0.9rem; font-weight:500;';
+        document.body.appendChild(toast);
+        setTimeout(function() { toast.remove(); }, 2500);
+      }
+
+      function activarApp(usuario, esPortalDirecto) {
+        usuarioActual = usuario;
+        var authScreen = document.getElementById('auth-screen');
+        var appScreen = document.getElementById('app-screen');
+        authScreen.style.display = 'none';
+        authScreen.classList.add('hidden');
+        appScreen.classList.remove('hidden');
+        appScreen.style.display = 'block';
+
+        document.getElementById('user-display-name').innerText = esPortalDirecto
+          ? 'Portal Directo'
+          : ((usuarioActual.nombre || usuarioActual.email || '') + (usuarioActual.rol ? ' (' + usuarioActual.rol + ')' : ''));
+
+        document.getElementById('admin-nav').classList.add('hidden');
+        document.getElementById('empresa-nav').classList.add('hidden');
+
+        if (usuarioActual.rol === 'ADMIN') {
+          document.getElementById('admin-nav').classList.remove('hidden');
+          navegar('admin-dash');
+        } else if (usuarioActual.rol === 'EMPRESA') {
+          if (!usuarioActual.empresaId) {
+            alert('El usuario EMPRESA no tiene EmpresaID asignado');
+            return;
+          }
+          document.getElementById('empresa-nav').classList.remove('hidden');
+          navegar('empresa-dash');
         }
-        return limpia;
       }
 
       window.onload = function() {
-        if (!empresaId) {
-          document.getElementById("login-view").classList.remove("hidden");
+        if (directEmpresaId) {
+          activarApp(
+            { email: 'portal@empresa.com', nombre: 'Portal Establecimiento', rol: 'EMPRESA', empresaId: directEmpresaId },
+            true
+          );
+        }
+      };
+
+      function procesarLogin(e) {
+        e.preventDefault();
+        var email = document.getElementById('login-email').value.trim();
+        var pass = document.getElementById('login-password').value;
+        var errDiv = document.getElementById('login-error');
+        var btn = document.getElementById('btn-login-submit');
+
+        errDiv.style.display = 'none';
+        errDiv.innerText = '';
+        if (btn) {
+          btn.disabled = true;
+          btn.innerText = 'Iniciando sesión...';
+        }
+
+        apiGet({ action: 'login', email: email, password: pass })
+          .then(function(res) {
+            if (btn) {
+              btn.disabled = false;
+              btn.innerText = 'Iniciar Sesión';
+            }
+            if (!res || !res.success || !res.usuario) {
+              errDiv.innerText = (res && res.error) ? res.error : 'Credenciales incorrectas';
+              errDiv.style.display = 'block';
+              return;
+            }
+            activarApp(res.usuario, false);
+          })
+          .catch(function(error) {
+            console.error(error);
+            if (btn) {
+              btn.disabled = false;
+              btn.innerText = 'Iniciar Sesión';
+            }
+            errDiv.innerText = 'Error de conexión';
+            errDiv.style.display = 'block';
+          });
+      }
+
+      function cerrarSesion() {
+        usuarioActual = null;
+        if (directEmpresaId) {
+          window.top.location.href = githubAppDomain + '/';
+          return;
+        }
+        document.getElementById('app-screen').classList.add('hidden');
+        document.getElementById('app-screen').style.display = 'none';
+        var authScreen = document.getElementById('auth-screen');
+        authScreen.classList.remove('hidden');
+        authScreen.style.display = 'flex';
+        document.getElementById('admin-nav').classList.add('hidden');
+        document.getElementById('empresa-nav').classList.add('hidden');
+        document.getElementById('login-password').value = '';
+      }
+
+      function navegar(vista) {
+        document.getElementById('view-admin-dash').classList.add('hidden');
+        document.getElementById('view-empresas').classList.add('hidden');
+        document.getElementById('view-usuarios').classList.add('hidden');
+        document.getElementById('view-empresa-dash').classList.add('hidden');
+
+        if (vista === 'admin-dash') {
+          document.getElementById('view-admin-dash').classList.remove('hidden');
+          cargarAdminDash();
+        } else if (vista === 'empresas-view') {
+          document.getElementById('view-empresas').classList.remove('hidden');
+          cargarEmpresasAdmin();
+        } else if (vista === 'usuarios-view') {
+          document.getElementById('view-usuarios').classList.remove('hidden');
+          cargarUsuariosAdmin();
+        } else if (vista === 'empresa-dash') {
+          document.getElementById('view-empresa-dash').classList.remove('hidden');
+          cargarEmpresaDash();
+        }
+      }
+
+      /* ==================== ADMIN DASHBOARD ==================== */
+      function cargarAdminDash() {
+        apiGet({ action: 'getMetricasAdmin' })
+          .then(function(res) {
+            var m = (res && res.data) ? res.data : (res || {});
+            document.getElementById('adm-empresas-activas').innerText = m.empresasActivas || 0;
+            document.getElementById('adm-empresas-premium').innerText = m.empresasPremium || 0;
+            document.getElementById('adm-total-val').innerText = m.totalValoraciones || 0;
+            document.getElementById('adm-media-global').innerText = m.mediaGlobal || 0;
+            document.getElementById('adm-google-clicks').innerText = m.totalGoogleReseñas || 0;
+            document.getElementById('adm-cupones').innerText = m.totalCuponesEmitidos || 0;
+            if (document.getElementById('adm-cupones-usados')) document.getElementById('adm-cupones-usados').innerText = m.cuponesUsados || 0;
+            if (document.getElementById('adm-tasa-canje')) document.getElementById('adm-tasa-canje').innerText = (m.tasaCanje || 0) + '%';
+            if (document.getElementById('adm-incidencias')) document.getElementById('adm-incidencias').innerText = m.incidencias || 0;
+            if (document.getElementById('adm-val-mes')) document.getElementById('adm-val-mes').innerText = m.valoracionesMes || 0;
+            if (document.getElementById('adm-top-recompensa')) document.getElementById('adm-top-recompensa').innerText = m.topRecompensa || 'Sin datos';
+
+            var tbody = document.getElementById('ranking-tbody');
+            tbody.innerHTML = '';
+            if (!m.ranking || m.ranking.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay datos suficientes.</td></tr>';
+              return;
+            }
+            for (var i = 0; i < m.ranking.length; i++) {
+              var r = m.ranking[i];
+              tbody.innerHTML +=
+                '<tr>' +
+                '<td><strong>' + (r.nombre || '') + '</strong></td>' +
+                '<td>' + (r.totalVal || 0) + '</td>' +
+                '<td>⭐ ' + (r.media || 0) + '</td>' +
+                '<td>' + (r.googleClicks || 0) + '</td>' +
+                '</tr>';
+            }
+          })
+          .catch(function(err) { console.error(err); });
+
+        apiGet({ action: 'getEmpresas' })
+          .then(function(data) {
+            var empresas = (data && data.empresas) ? data.empresas : [];
+            var select = document.getElementById('adm-cp-empresa');
+            if (!select) return;
+            select.innerHTML = '<option value="">-- Selecciona establecimiento --</option>';
+            for (var i = 0; i < empresas.length; i++) {
+              select.innerHTML += '<option value="' + empresas[i].id + '">' + empresas[i].nombre + '</option>';
+            }
+          })
+          .catch(function(err) { console.error(err); });
+
+        cargarCuponesAdminGlobales();
+      }
+
+      function cargarCuponesAdminGlobales() {
+        apiGet({ action: 'getTodosLosCuponesAdmin' })
+          .then(function(res) {
+            var lista = (res && res.cupones) ? res.cupones : [];
+            var tbody = document.getElementById('adm-cupones-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            if (lista.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding:1.5rem;color:var(--text-muted);">No hay cupones emitidos en el sistema.</td></tr>';
+              return;
+            }
+            for (var i = 0; i < lista.length; i++) {
+              var c = lista[i];
+              var estado = c.usado ? 'CANJEADO' : (c.caducado ? 'CADUCADO' : 'DISPONIBLE');
+              var badgeClass = (!c.usado && !c.caducado) ? 'badge-active' : 'badge-inactive';
+              tbody.innerHTML +=
+                '<tr>' +
+                '<td><strong>' + (c.nombreEmpresa || '') + '</strong></td>' +
+                '<td><code>' + (c.codigo || '') + '</code></td>' +
+                '<td>' + (c.descuento || '') + '</td>' +
+                '<td>' + (c.caducidad || '') + '</td>' +
+                '<td><span class="badge ' + badgeClass + '">' + estado + '</span></td>' +
+                '<td style="text-align:right;">' +
+                (!c.usado && !c.caducado ? '<button class="btn btn-sm btn-success" onclick="marcarUsadoAdmin(\'' + escJs(c.codigo) + '\')">Canjear</button> ' : '') +
+                '<button class="btn btn-sm btn-danger" onclick="borrarCuponAdmin(\'' + escJs(c.id) + '\')">🗑️</button>' +
+                '</td>' +
+                '</tr>';
+            }
+          })
+          .catch(function(err) { console.error(err); });
+      }
+
+      function emitirCuponAdmin(e) {
+        e.preventDefault();
+        var empId = document.getElementById('adm-cp-empresa').value;
+        var desc = document.getElementById('adm-cp-desc').value;
+        var dias = document.getElementById('adm-cp-dias').value;
+        if (!empId) {
+          alert('Selecciona una empresa.');
+          return;
+        }
+        apiGet({ action: 'emitirCuponAdmin', empresaId: empId, descuento: desc, dias: dias })
+          .then(function(res) {
+            if (res && res.success) {
+              alert('¡Cupón emitido con éxito!\nCódigo: ' + res.codigo + '\nCaducidad: ' + res.caducidad);
+              document.getElementById('form-admin-cupon').reset();
+              cargarAdminDash();
+            } else {
+              alert((res && (res.error || res.message)) || 'No se pudo emitir el cupón.');
+            }
+          })
+          .catch(function(err) { console.error(err); });
+      }
+
+      function marcarUsadoAdmin(codigo) {
+        apiGet({ action: 'marcarCuponUsado', codigo: codigo }).then(function() { cargarAdminDash(); });
+      }
+
+      function borrarCuponAdmin(cuponId) {
+        if (confirm('¿Eliminar este cupón del sistema?')) {
+          apiGet({ action: 'eliminarCupon', id: cuponId }).then(function() { cargarAdminDash(); });
+        }
+      }
+
+      /* ==================== EMPRESAS ==================== */
+      function cargarEmpresasAdmin() {
+        var tbody = document.getElementById('empresas-tbody');
+        if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="text-center" style="padding: 1.5rem; color: var(--text-muted);">Cargando establecimientos...</td></tr>';
+
+        apiGet({ action: 'getEmpresas' })
+          .then(function(data) {
+            window.listaEmpresasGlobal = (data && data.empresas) ? data.empresas : [];
+            renderizarTablaEmpresas(window.listaEmpresasGlobal);
+          })
+          .catch(function(err) { console.error(err); });
+      }
+
+      function renderizarTablaEmpresas(lista) {
+        var tbody = document.getElementById('empresas-tbody');
+        var badgeTotal = document.getElementById('total-empresas-badge');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        if (badgeTotal) badgeTotal.innerText = lista.length + ' registradas';
+
+        if (!lista || lista.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" class="text-center" style="padding: 2rem; color: var(--text-muted);">No hay empresas registradas todavía.</td></tr>';
           return;
         }
 
-        document.getElementById("loading-view").classList.remove("hidden");
-        var url = gasUrl + "?action=getEmpresa&id=" + encodeURIComponent(empresaId);
-        fetch(url)
-          .then(function(res) { return res.json(); })
-          .then(function(data) {
-            document.getElementById("loading-view").classList.add("hidden");
-            var emp = data && data.empresa ? data.empresa : null;
-            if (!data || !data.success || !emp || !emp.activo) {
-              mostrarError("El enlace QR no es válido, ha caducado o el establecimiento está inactivo.");
-              return;
-            }
-            empresaData = emp;
-            document.getElementById("empresa-nombre").innerText = emp.nombre || "Establecimiento";
-            document.title = (emp.nombre || "Valoración") + " - HAPPYREVIEW PRO";
-            document.getElementById("main-view").classList.remove("hidden");
-          })
-          .catch(function() {
-            mostrarError("No se pudo conectar con el servicio de valoración.");
-          });
-      };
+        for (var i = 0; i < lista.length; i++) {
+          var emp = lista[i];
+          var panelUrl = githubAppDomain + '/?panel=' + encodeURIComponent(emp.id);
+          tbody.innerHTML += '<tr>' +
+            '<td><strong>' + (emp.nombre || '') + '</strong><br><small style="color: var(--primary); font-weight: 500;">🎁 ' + (emp.recompensa || 'Cupón estándar') + '</small></td>' +
+            '<td>' + (emp.email || '') + '<br><small style="color: var(--text-muted);">' + (emp.telefono || 'Sin teléfono') + '</small></td>' +
+            '<td><span class="badge ' + (emp.plan === 'Premium' ? 'badge-premium' : 'badge-standard') + '">' + (emp.plan || 'Standard') + '</span><br><span class="badge ' + (emp.activo ? 'badge-active' : 'badge-inactive') + '" style="margin-top: 4px;">' + (emp.activo ? 'Activa' : 'Inactiva') + '</span></td>' +
+            '<td style="text-align: right; white-space: nowrap;">' +
+              '<button class="btn btn-sm btn-success" onclick="abrirModalCartelPorEmpresa(\'' + escJs(emp.id) + '\')">🖨️ QR</button> ' +
+              '<button class="btn btn-sm btn-outline" onclick="prepararEdicionEmpresa(\'' + escJs(emp.id) + '\')">✏️ Editar</button> ' +
+              '<button class="btn btn-sm btn-secondary" onclick="copiarEnlacePanel(\'' + escJs(panelUrl) + '\')">🔗 Panel</button> ' +
+              '<button class="btn btn-sm btn-danger" onclick="eliminarEmpresa(\'' + escJs(emp.id) + '\')">🗑️</button>' +
+            '</td>' +
+            '</tr>';
+        }
+      }
 
-      function iniciarSesion(event) {
-        event.preventDefault();
-        var btn = document.getElementById("btn-login");
-        var errBox = document.getElementById("login-error");
-        errBox.classList.add("hidden");
+      function filtrarTablaEmpresasLocal() {
+        var q = document.getElementById('buscar-empresa-input').value.toLowerCase().trim();
+        if (!q) {
+          renderizarTablaEmpresas(window.listaEmpresasGlobal);
+          return;
+        }
+        var filtradas = window.listaEmpresasGlobal.filter(function(emp) {
+          return (emp.nombre && emp.nombre.toLowerCase().includes(q)) ||
+                 (emp.email && emp.email.toLowerCase().includes(q)) ||
+                 (emp.telefono && emp.telefono.toLowerCase().includes(q)) ||
+                 (emp.plan && emp.plan.toLowerCase().includes(q));
+        });
+        renderizarTablaEmpresas(filtradas);
+      }
+
+      function guardarEmpresa(e) {
+        e.preventDefault();
+        var id = document.getElementById('emp-id').value;
+        var nombre = document.getElementById('emp-nombre').value;
+        var email = document.getElementById('emp-email').value;
+        var telefono = document.getElementById('emp-telefono').value;
+        var googleUrl = document.getElementById('emp-google').value;
+        var plan = document.getElementById('emp-plan').value;
+        var recompensa = document.getElementById('emp-recompensa').value;
+        var activo = document.getElementById('emp-activo').checked;
+
+        var btn = document.getElementById('btn-guardar-empresa');
+        var textoOriginal = id ? 'Actualizar Cambios' : 'Crear Empresa';
         btn.disabled = true;
+        btn.innerText = 'Guardando...';
 
-        var email = document.getElementById("login-email").value.trim();
-        var password = document.getElementById("login-password").value;
+        var params = id
+          ? { action: 'editarEmpresa', id: id, nombre: nombre, email: email, telefono: telefono, googleUrl: googleUrl, plan: plan, activo: activo, recompensa: recompensa }
+          : { action: 'crearEmpresa', nombre: nombre, email: email, telefono: telefono, googleUrl: googleUrl, plan: plan, recompensa: recompensa };
 
-        var url = gasUrl + "?action=login&email=" + encodeURIComponent(email) +
-          "&password=" + encodeURIComponent(password);
-
-        fetch(url)
-          .then(function(res) { return res.json(); })
-          .then(function(data) {
-            btn.disabled = false;
-            if (!data || !data.success) {
-              errBox.innerText = (data && data.error) ? data.error : "Credenciales incorrectas";
-              errBox.classList.remove("hidden");
-              return;
-            }
-            var u = data.usuario || {};
-            document.getElementById("login-usuario-info").innerText =
-              "Sesión iniciada: " + (u.nombre || u.email || "") + (u.rol ? (" (" + u.rol + ")") : "");
-            document.getElementById("login-ok-box").classList.remove("hidden");
-          })
-          .catch(function() {
-            btn.disabled = false;
-            errBox.innerText = "Error al conectar con el servidor.";
-            errBox.classList.remove("hidden");
-          });
-      }
-
-      function mostrarError(mensaje) {
-        document.getElementById("loading-view").classList.add("hidden");
-        if (mensaje) {
-          document.getElementById("error-message").innerText = mensaje;
-        }
-        document.getElementById("error-view").classList.remove("hidden");
-      }
-
-      function seleccionarEstrellas(n) {
-        if (enviandoVoto) return;
-        estrellasSeleccionadas = n;
-        var stars = document.querySelectorAll(".star");
-        for (var i = 0; i < stars.length; i++) {
-          stars[i].style.color = (i < n) ? "#eab308" : "#cbd5e1";
-        }
-
-        if (n >= 4) {
-          document.getElementById("feedback-section").classList.add("hidden");
-          enviarValoracion(n, "", "");
-        } else {
-          document.getElementById("feedback-section").classList.remove("hidden");
-        }
-      }
-
-      function enviarValoracionPrivada() {
-        if (enviandoVoto) return;
-        var comentario = document.getElementById("comentario-cliente").value;
-        var email = document.getElementById("email-cliente").value;
-        enviarValoracion(estrellasSeleccionadas, comentario, email);
-      }
-
-      function enviarValoracion(estrellas, comentario, email) {
-        enviandoVoto = true;
-        document.getElementById("enviando-estado").classList.remove("hidden");
-        var btnPriv = document.getElementById("btn-enviar-privado");
-        if (btnPriv) btnPriv.disabled = true;
-
-        var url = gasUrl + "?action=votar&id=" + encodeURIComponent(empresaId) +
-          "&estrellas=" + encodeURIComponent(estrellas) +
-          "&comentario=" + encodeURIComponent(comentario || "") +
-          "&email=" + encodeURIComponent(email || "");
-
-        fetch(url)
-          .then(function(res) { return res.json(); })
+        apiGet(params)
           .then(function(res) {
-            document.getElementById("enviando-estado").classList.add("hidden");
+            btn.disabled = false;
+            btn.innerText = textoOriginal;
+            if (res && res.success) {
+              resetFormEmpresa();
+              cargarEmpresasAdmin();
+              mostrarToast(id ? 'Empresa actualizada correctamente.' : 'Empresa creada correctamente.');
+            } else {
+              alert('Error al guardar: ' + ((res && (res.error || res.message)) || 'Error'));
+            }
+          })
+          .catch(function(err) {
+            console.error(err);
+            btn.disabled = false;
+            btn.innerText = textoOriginal;
+          });
+      }
 
-            if (!res || !res.success) {
-              enviandoVoto = false;
-              if (btnPriv) btnPriv.disabled = false;
-              alert((res && res.error) ? res.error : "No se pudo registrar la valoración.");
+      function prepararEdicionEmpresa(id) {
+        var emp = null;
+        for (var i = 0; i < window.listaEmpresasGlobal.length; i++) {
+          if (String(window.listaEmpresasGlobal[i].id) === String(id)) {
+            emp = window.listaEmpresasGlobal[i];
+            break;
+          }
+        }
+        if (!emp) return;
+
+        document.getElementById('empresa-form-title').innerText = '✏️ Editando: ' + emp.nombre;
+        document.getElementById('modo-edicion-badge').style.display = 'inline-block';
+        document.getElementById('emp-id').value = emp.id;
+        document.getElementById('emp-nombre').value = emp.nombre;
+        document.getElementById('emp-email').value = emp.email;
+        document.getElementById('emp-telefono').value = emp.telefono || '';
+        document.getElementById('emp-google').value = emp.googleUrl;
+        document.getElementById('emp-plan').value = emp.plan;
+        document.getElementById('emp-recompensa').value = emp.recompensa || '';
+        document.getElementById('emp-activo').checked = !!emp.activo;
+
+        document.getElementById('emp-activo-div').classList.remove('hidden');
+        document.getElementById('btn-cancelar-empresa').classList.remove('hidden');
+        document.getElementById('btn-guardar-empresa').innerText = 'Actualizar Cambios';
+        document.getElementById('form-card-empresa').style.borderColor = 'var(--primary)';
+        document.getElementById('form-card-empresa').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      function resetFormEmpresa() {
+        document.getElementById('empresa-form-title').innerText = '✨ Registrar Nueva Empresa';
+        document.getElementById('modo-edicion-badge').style.display = 'none';
+        document.getElementById('empresa-form').reset();
+        document.getElementById('emp-id').value = '';
+        document.getElementById('emp-activo-div').classList.add('hidden');
+        document.getElementById('btn-cancelar-empresa').classList.add('hidden');
+        document.getElementById('btn-guardar-empresa').innerText = 'Crear Empresa';
+        document.getElementById('form-card-empresa').style.borderColor = 'var(--border-color)';
+      }
+
+      function eliminarEmpresa(id) {
+        if (confirm('¿Estás totalmente seguro de eliminar esta empresa y sus datos asociados?')) {
+          apiGet({ action: 'eliminarEmpresa', id: id }).then(function() {
+            cargarEmpresasAdmin();
+            mostrarToast('Empresa eliminada correctamente.');
+          });
+        }
+      }
+
+      function copiarEnlacePanel(url) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(function() {
+            mostrarToast('¡Enlace de acceso directo copiado al portapapeles!');
+          }, function() {
+            prompt('Copia este enlace de acceso directo:', url);
+          });
+        } else {
+          prompt('Copia este enlace de acceso directo:', url);
+        }
+      }
+
+      /* ==================== USUARIOS ==================== */
+      function cargarUsuariosAdmin() {
+        apiGet({ action: 'getEmpresas' })
+          .then(function(data) {
+            var empresas = (data && data.empresas) ? data.empresas : [];
+            var selectEmp = document.getElementById('usr-empresa-id');
+            if (!selectEmp) return;
+            selectEmp.innerHTML = '<option value="">-- Selecciona empresa --</option>';
+            for (var i = 0; i < empresas.length; i++) {
+              selectEmp.innerHTML += '<option value="' + empresas[i].id + '">' + empresas[i].nombre + '</option>';
+            }
+          })
+          .catch(function(err) { console.error(err); });
+
+        apiGet({ action: 'getUsuarios' })
+          .then(function(data) {
+            listaUsuariosGlobal = (data && data.usuarios) ? data.usuarios : [];
+            var tbody = document.getElementById('usuarios-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (listaUsuariosGlobal.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="5" class="text-center">No hay usuarios registrados.</td></tr>';
               return;
             }
 
-            document.getElementById("main-view").classList.add("hidden");
-            document.getElementById("success-view").classList.remove("hidden");
-
-            if (estrellas >= 4) {
-              var textoCaducidad = (res.cupon && res.cupon.caducidad)
-                ? (" Válido hasta el " + res.cupon.caducidad + ".")
-                : "";
-              document.getElementById("success-message").innerText = "¡Muchas gracias por tu valoración de " + estrellas + " estrellas! Canjea tu regalo en el establecimiento." + textoCaducidad;
-              if (res.cupon) {
-                document.getElementById("coupon-code").innerText = res.cupon.codigo || "";
-                document.getElementById("coupon-desc").innerText = res.cupon.descuento || "";
-                document.getElementById("coupon-expiry").innerText = res.cupon.caducidad ? ("📅 Válido hasta: " + res.cupon.caducidad) : "";
-                document.getElementById("coupon-box").classList.remove("hidden");
-              }
-              var urlGoogle = normalizarUrlExterna(empresaData && empresaData.googleUrl);
-              if (urlGoogle) {
-                var btnG = document.getElementById("btn-google-redirect");
-                btnG.href = urlGoogle;
-                btnG.classList.remove("hidden");
-              }
-            } else {
-              document.getElementById("success-message").innerText = "Hemos recibido tus comentarios de forma privada. Muchas gracias por ayudarnos a mejorar.";
+            for (var i = 0; i < listaUsuariosGlobal.length; i++) {
+              var u = listaUsuariosGlobal[i];
+              tbody.innerHTML +=
+                '<tr>' +
+                '<td><strong>' + (u.nombre || '') + '</strong></td>' +
+                '<td>' + (u.email || '') + '</td>' +
+                '<td><span class="badge ' + (u.rol === 'ADMIN' ? 'badge-premium' : 'badge-active') + '">' + (u.rol || '') + '</span></td>' +
+                '<td>' + (u.empresaId || '-') + '</td>' +
+                '<td style="text-align:right;">' +
+                '<button class="btn btn-sm btn-outline" style="margin-right:4px;" onclick="prepararEdicionUsuario(\'' + escJs(u.email) + '\')">Editar</button>' +
+                (String(u.email || '').toLowerCase() !== 'fryserviciosdigitales@gmail.com'
+                  ? '<button class="btn btn-sm btn-danger" onclick="eliminarUsuario(\'' + escJs(u.email) + '\')">Eliminar</button>'
+                  : '<span style="font-size:.8rem;color:var(--text-muted);">Sistema</span>') +
+                '</td>' +
+                '</tr>';
             }
           })
-          .catch(function() {
-            enviandoVoto = false;
-            document.getElementById("enviando-estado").classList.add("hidden");
-            if (btnPriv) btnPriv.disabled = false;
-            alert("Error al registrar la valoración. Inténtalo de nuevo.");
+          .catch(function(error) { console.error(error); });
+      }
+
+      function cambiarRolSelect() {
+        var rol = document.getElementById('usr-rol').value;
+        var group = document.getElementById('usr-empresa-group');
+        if (group) group.style.display = (rol === 'ADMIN') ? 'none' : 'block';
+      }
+
+      function prepararEdicionUsuario(email) {
+        var usr = null;
+        for (var i = 0; i < listaUsuariosGlobal.length; i++) {
+          if (String(listaUsuariosGlobal[i].email || '').toLowerCase() === String(email || '').toLowerCase()) {
+            usr = listaUsuariosGlobal[i];
+            break;
+          }
+        }
+        if (!usr) return;
+
+        document.getElementById('usr-form-title').innerText = '✏️ Editar Usuario: ' + usr.nombre;
+        document.getElementById('usr-email-original').value = usr.email;
+        document.getElementById('usr-email').value = usr.email;
+        document.getElementById('usr-nombre').value = usr.nombre;
+        document.getElementById('usr-rol').value = usr.rol;
+        document.getElementById('usr-empresa-id').value = usr.empresaId || '';
+        document.getElementById('usr-password').value = '';
+        document.getElementById('usr-password').required = false;
+
+        cambiarRolSelect();
+        document.getElementById('btn-cancelar-usuario').classList.remove('hidden');
+        document.getElementById('btn-guardar-usuario').innerText = 'Actualizar Usuario';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function resetFormUsuario() {
+        document.getElementById('usr-form-title').innerText = '✨ Crear Nuevo Usuario del Sistema';
+        document.getElementById('usuario-form').reset();
+        document.getElementById('usr-email-original').value = '';
+        document.getElementById('usr-password').required = true;
+        cambiarRolSelect();
+        document.getElementById('btn-cancelar-usuario').classList.add('hidden');
+        document.getElementById('btn-guardar-usuario').innerText = 'Crear Usuario';
+      }
+
+      function guardarUsuario(e) {
+        e.preventDefault();
+        var emailOriginal = document.getElementById('usr-email-original').value;
+        var email = document.getElementById('usr-email').value;
+        var password = document.getElementById('usr-password').value;
+        var nombre = document.getElementById('usr-nombre').value;
+        var rol = document.getElementById('usr-rol').value;
+        var empresaId = document.getElementById('usr-empresa-id').value;
+
+        if (rol === 'EMPRESA' && !empresaId) {
+          alert('Selecciona una empresa para usuarios con rol EMPRESA.');
+          return;
+        }
+
+        if (emailOriginal) {
+          apiGet({
+            action: 'editarUsuario',
+            emailOriginal: emailOriginal,
+            nombre: nombre,
+            email: email,
+            rol: rol,
+            empresaId: rol === 'ADMIN' ? '' : empresaId,
+            password: password
+          }).then(function(res) {
+            if (res && res.success) {
+              resetFormUsuario();
+              cargarUsuariosAdmin();
+              alert('Usuario actualizado correctamente.');
+            } else {
+              alert((res && res.error) ? res.error : 'No se pudo actualizar el usuario');
+            }
           });
+        } else {
+          if (!password) {
+            alert('Ingresa una contraseña.');
+            return;
+          }
+          apiGet({
+            action: 'crearUsuario',
+            email: email,
+            password: password,
+            nombre: nombre,
+            rol: rol,
+            empresaId: rol === 'ADMIN' ? '' : empresaId
+          }).then(function(res) {
+            if (res && res.success) {
+              resetFormUsuario();
+              cargarUsuariosAdmin();
+              alert('Usuario creado correctamente.');
+            } else {
+              alert((res && res.error) ? res.error : 'No se pudo crear el usuario');
+            }
+          });
+        }
+      }
+
+      function eliminarUsuario(email) {
+        if (confirm('¿Estás seguro de eliminar este usuario?')) {
+          apiGet({ action: 'eliminarUsuario', email: email }).then(function() { cargarUsuariosAdmin(); });
+        }
+      }
+
+      /* ==================== EMPRESA DASHBOARD ==================== */
+      function cargarEmpresaDash() {
+        if (!usuarioActual || !usuarioActual.empresaId) {
+          alert('El usuario no tiene empresa asignada');
+          return;
+        }
+        var empresaId = usuarioActual.empresaId;
+
+        apiGet({ action: 'getMetricasEmpresa', id: empresaId })
+          .then(function(res) {
+            var data = (res && res.data) ? res.data : (res || {});
+            document.getElementById('emp-dash-titulo').innerText = '📈 ' + (data.nombreEmpresa || 'Establecimiento');
+            document.getElementById('emp-m-val').innerText = data.totalValoraciones || 0;
+            document.getElementById('emp-m-media').innerText = '⭐ ' + (data.media || 0) + ' media global';
+            document.getElementById('emp-m-sat').innerText = (data.satisfaccion || 0) + '%';
+            document.getElementById('emp-m-pos-neg').innerText = (data.positivas || 0) + ' positivas / ' + (data.negativas || 0) + ' privadas';
+            document.getElementById('emp-m-cup-emit').innerText = data.cuponesEmitidos || 0;
+            document.getElementById('emp-m-cup-usados').innerText = (data.cuponesUsados || 0) + ' canjeados';
+
+            var ultimas = document.getElementById('ultimas-valoraciones');
+            if (ultimas) {
+              ultimas.innerHTML = '';
+              if (!data.comentarios || data.comentarios.length === 0) {
+                ultimas.innerHTML = '<p style="color:var(--text-muted)">Sin valoraciones todavía</p>';
+              } else {
+                for (var i = 0; i < Math.min(data.comentarios.length, 5); i++) {
+                  var c = data.comentarios[i];
+                  ultimas.innerHTML +=
+                    '<div style="padding:14px;border-bottom:1px solid #e5e7eb;">' +
+                    '<strong>' + c.estrellas + ' ⭐</strong><br>' +
+                    '<span style="font-size:.9rem;">' + (c.comentario || 'Sin comentario') + '</span><br>' +
+                    '<small style="color:#64748b;">' + (c.fecha || '') + '</small>' +
+                    '</div>';
+                }
+              }
+            }
+
+            var total = data.totalValoraciones || 1;
+            var breakdown = document.getElementById('ratings-breakdown');
+            if (breakdown) {
+              breakdown.innerHTML = '';
+              var estrellas = [
+                { n: 5, c: data.c5 || 0, col: '#22c55e' },
+                { n: 4, c: data.c4 || 0, col: '#84cc16' },
+                { n: 3, c: data.c3 || 0, col: '#eab308' },
+                { n: 2, c: data.c2 || 0, col: '#f97316' },
+                { n: 1, c: data.c1 || 0, col: '#ef4444' }
+              ];
+              for (var x = 0; x < estrellas.length; x++) {
+                var e = estrellas[x];
+                var pct = Math.round((e.c / total) * 100);
+                breakdown.innerHTML +=
+                  '<div style="display:flex;align-items:center;margin-bottom:10px;">' +
+                  '<span style="width:60px;">' + e.n + ' ⭐</span>' +
+                  '<div style="flex:1;height:10px;background:#e5e7eb;border-radius:12px;margin:0 10px;">' +
+                  '<div style="height:100%;width:' + pct + '%;background:' + e.col + ';border-radius:12px;"></div>' +
+                  '</div>' +
+                  '<span>' + e.c + '</span>' +
+                  '</div>';
+              }
+            }
+
+            var incidencias = document.getElementById('incidencias-container');
+            if (incidencias) {
+              incidencias.innerHTML = '';
+              var listaInc = data.incidencias || [];
+              if (listaInc.length === 0) {
+                incidencias.innerHTML = '<p style="color:#22c55e;padding:1rem;">🎉 No existen incidencias registradas.</p>';
+              } else {
+                for (var y = 0; y < listaInc.length; y++) {
+                  var inc = listaInc[y];
+                  incidencias.innerHTML +=
+                    '<div style="background:#fff1f2;padding:12px;border-left:4px solid #ef4444;margin-bottom:10px;border-radius:8px;">' +
+                    '<strong>' + inc.estrellas + ' ⭐</strong><br>' +
+                    '<small>' + (inc.email || 'Anónimo') + '</small><br><br>' +
+                    (inc.comentario || 'Sin comentario') +
+                    '</div>';
+                }
+              }
+            }
+
+            var tbody = document.getElementById('cupones-tbody');
+            if (tbody) {
+              tbody.innerHTML = '';
+              if (!data.cuponesLista || data.cuponesLista.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">No existen cupones emitidos</td></tr>';
+              } else {
+                for (var z = 0; z < data.cuponesLista.length; z++) {
+                  var cpn = data.cuponesLista[z];
+                  var estadoHtml = '';
+                  var accionHtml = '-';
+                  if (cpn.usado) {
+                    estadoHtml = '<span class="badge badge-inactive">✅ Canjeado</span>';
+                  } else if (cpn.caducado) {
+                    estadoHtml = '<span class="badge badge-inactive">⌛ Caducado</span>';
+                    accionHtml = '<span style="font-size:.8rem;color:var(--text-muted);">Vencido</span>';
+                  } else {
+                    estadoHtml = '<span class="badge badge-active">🟢 Disponible</span>';
+                    accionHtml = '<button class="btn btn-sm btn-success" onclick="marcarCuponUsado(\'' + escJs(cpn.codigo) + '\')">Canjear</button>';
+                  }
+                  tbody.innerHTML +=
+                    '<tr>' +
+                    '<td><strong>' + (cpn.codigo || '') + '</strong></td>' +
+                    '<td>' + (cpn.descuento || '') + '</td>' +
+                    '<td>' + (cpn.caducidad || '') + '</td>' +
+                    '<td>' + estadoHtml + '</td>' +
+                    '<td style="text-align:right;">' + accionHtml + '</td>' +
+                    '</tr>';
+                }
+              }
+            }
+
+            cargarGraficaEmpresa();
+            cargarGraficaSatisfaccion(data.positivas || 0, data.negativas || 0);
+          })
+          .catch(function(error) { console.error(error); });
+      }
+
+      function cargarGraficaEmpresa() {
+        apiGet({ action: 'getEvolucionEmpresa', id: usuarioActual.empresaId })
+          .then(function(res) {
+            var datos = (res && res.data) ? res.data : (res || { labels: [], values: [] });
+            var canvas = document.getElementById('grafica-evolucion');
+            if (!canvas) return;
+            if (window.grafEmpresa) window.grafEmpresa.destroy();
+            window.grafEmpresa = new Chart(canvas, {
+              type: 'line',
+              data: {
+                labels: datos.labels || [],
+                datasets: [{
+                  label: 'Valoraciones',
+                  data: datos.values || [],
+                  borderColor: '#4f46e5',
+                  backgroundColor: 'rgba(79,70,229,.15)',
+                  fill: true,
+                  tension: 0.4
+                }]
+              },
+              options: { responsive: true, maintainAspectRatio: false }
+            });
+          })
+          .catch(function(err) { console.error(err); });
+      }
+
+      function cargarGraficaSatisfaccion(positivas, negativas) {
+        var canvas = document.getElementById('grafica-satisfaccion');
+        if (!canvas) return;
+        if (window.grafSatisfaccion) window.grafSatisfaccion.destroy();
+        window.grafSatisfaccion = new Chart(canvas, {
+          type: 'doughnut',
+          data: {
+            labels: ['Positivas', 'Incidencias'],
+            datasets: [{ data: [positivas, negativas], backgroundColor: ['#22c55e', '#ef4444'] }]
+          },
+          options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+      }
+
+      function marcarCuponUsado(codigo) {
+        if (confirm('¿Confirmas que el cliente ha presentado el código ' + codigo + ' en el establecimiento?')) {
+          apiGet({ action: 'marcarCuponUsado', codigo: codigo, empresaId: usuarioActual ? usuarioActual.empresaId : '' })
+            .then(function(res) {
+              if (res && res.success) {
+                cargarEmpresaDash();
+              } else {
+                alert((res && res.error) ? res.error : 'Error al actualizar el cupón.');
+                cargarEmpresaDash();
+              }
+            });
+        }
+      }
+
+      function copiarEnlaceCliente(empId) {
+        var url = githubAppDomain + '/?id=' + encodeURIComponent(empId);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(function() {
+            alert('¡Enlace QR del cliente copiado al portapapeles!');
+          }, function() {
+            prompt('Copia este enlace:', url);
+          });
+        } else {
+          prompt('Copia este enlace:', url);
+        }
+      }
+
+      /* ==================== MODAL CARTEL Y QR ==================== */
+      function abrirModalCartelPorEmpresa(empId) {
+        apiGet({ action: 'getEmpresa', id: empId }).then(function(data) {
+          var emp = data && data.empresa ? data.empresa : null;
+          var nombreEmpresa = emp ? emp.nombre : 'Establecimiento';
+          document.getElementById('poster-empresa-nombre').innerText = nombreEmpresa;
+
+          var targetUrl = githubAppDomain + '/?id=' + encodeURIComponent(empId);
+          var qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=' + encodeURIComponent(targetUrl);
+
+          document.getElementById('qr-modal-img-container').innerHTML = '<img src="' + qrApiUrl + '" alt="Código QR" style="width:200px; height:200px; display:block; margin:0 auto;">';
+          document.getElementById('qr-modal-url').innerText = targetUrl;
+          document.getElementById('modal-cartel').style.display = 'flex';
+        });
+      }
+
+      function cerrarModalCartel() {
+        document.getElementById('modal-cartel').style.display = 'none';
+      }
+
+      function imprimirCartelDirecto() {
+        var contenido = document.getElementById('printable-poster').innerHTML;
+        var ventanaImpresion = window.open('', '', 'height=700,width=700');
+        ventanaImpresion.document.write('<html><head><title>Cartel QR - HAPPYREVIEW PRO</title>');
+        ventanaImpresion.document.write('<style>body { font-family: Arial, sans-serif; text-align: center; padding: 30px; }</style>');
+        ventanaImpresion.document.write('</head><body>');
+        ventanaImpresion.document.write('<div style="border: 4px solid #4f46e5; border-radius: 16px; padding: 40px; max-width: 500px; margin: 0 auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">' + contenido + '</div>');
+        ventanaImpresion.document.write('</body></html>');
+        ventanaImpresion.document.close();
+        ventanaImpresion.focus();
+        setTimeout(function() {
+          ventanaImpresion.print();
+          ventanaImpresion.close();
+        }, 500);
       }
     </script>
   </body>
