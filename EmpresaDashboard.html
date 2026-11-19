@@ -113,18 +113,6 @@
   </div>
 </div>
 
-<br>
-
-<div class="card" style="background:linear-gradient(135deg,#eef2ff 0%,#faf5ff 100%);">
-  <h2 style="margin-bottom:10px;">🚀 Próximamente</h2>
-  <ul style="margin-left:20px;line-height:1.9;">
-    <li>Resumen IA de comentarios</li>
-    <li>Evolución mensual de satisfacción</li>
-    <li>Ranking de recompensas más usadas</li>
-    <li>Exportación PDF de informes</li>
-  </ul>
-</div>
-
 <script>
   function cargarEmpresaDash() {
     if (!usuarioActual) {
@@ -217,15 +205,27 @@
         } else {
           for (var z = 0; z < data.cuponesLista.length; z++) {
             var cpn = data.cuponesLista[z];
+            var estadoHtml = '';
+            var accionHtml = '-';
+
+            if (cpn.usado) {
+              estadoHtml = '<span class="badge badge-inactive">✅ Canjeado</span>';
+              accionHtml = '-';
+            } else if (cpn.caducado) {
+              estadoHtml = '<span class="badge badge-inactive">⌛ Caducado</span>';
+              accionHtml = '<span style="font-size:.8rem;color:var(--text-muted);">Vencido</span>';
+            } else {
+              estadoHtml = '<span class="badge badge-active">🟢 Disponible</span>';
+              accionHtml = '<button class="btn btn-sm btn-success" onclick="marcarCuponUsado(\'' + cpn.codigo + '\')">Canjear</button>';
+            }
+
             tbody.innerHTML +=
               '<tr>' +
               '<td><strong>' + cpn.codigo + '</strong></td>' +
               '<td>' + cpn.descuento + '</td>' +
               '<td>' + cpn.caducidad + '</td>' +
-              '<td>' + (cpn.usado ? '✅ Canjeado' : '🟢 Disponible') + '</td>' +
-              '<td style="text-align:right;">' +
-              (!cpn.usado ? '<button class="btn btn-sm btn-success" onclick="marcarCuponUsado(\'' + cpn.codigo + '\')">Canjear</button>' : '-') +
-              '</td>' +
+              '<td>' + estadoHtml + '</td>' +
+              '<td style="text-align:right;">' + accionHtml + '</td>' +
               '</tr>';
           }
         }
@@ -291,23 +291,25 @@
 
   function marcarCuponUsado(codigo) {
     if (confirm('¿Confirmas que el cliente ha presentado el código ' + codigo + ' en el establecimiento?')) {
+      var empId = (typeof usuarioActual !== 'undefined' && usuarioActual) ? usuarioActual.empresaId : '';
       google.script.run.withSuccessHandler(function(res) {
-        if (res.success) {
+        if (res && res.success) {
           cargarEmpresaDash();
         } else {
-          alert('Error al actualizar el cupón.');
+          alert((res && res.error) ? res.error : 'Error al actualizar el cupón.');
+          cargarEmpresaDash();
         }
-      }).marcarCuponUsado(codigo);
+      }).marcarCuponUsado(codigo, empId);
     }
   }
 
   function copiarEnlaceCliente(empId) {
-    var netlifyDomain = 'https://happyreviewpro.netlify.app';
-    var url = netlifyDomain + '/?id=' + empId;
+    var githubAppDomain = 'https://fryserviciosdigitales.github.io/FRYhappyreview-pro';
+    var url = githubAppDomain + '/?id=' + encodeURIComponent(empId);
     navigator.clipboard.writeText(url).then(function() {
       alert('¡Enlace QR del cliente copiado al portapapeles!');
     }, function() {
       prompt('Copia este enlace:', url);
     });
   }
-<\/script>
+</script>
