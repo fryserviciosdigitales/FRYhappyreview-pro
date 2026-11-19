@@ -2,8 +2,8 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HAPPYREVIEW PRO - SaaS de Reputación</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HAPPYREVIEW PRO</title>
     <style>
       :root {
         --primary: #4f46e5;
@@ -16,6 +16,7 @@
         --bg: #f8fafc;
         --radius: 12px;
         --shadow-subtle: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06);
       }
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body {
@@ -44,7 +45,8 @@
         margin-bottom: 0.35rem;
       }
       .form-group input,
-      .form-group select {
+      .form-group select,
+      .form-group textarea {
         width: 100%;
         padding: 0.65rem 0.75rem;
         border: 1px solid var(--border-color);
@@ -73,7 +75,9 @@
         cursor: pointer;
         background: var(--primary);
         color: #ffffff;
+        text-decoration: none;
       }
+      .btn:disabled { opacity: 0.6; cursor: not-allowed; }
       .btn-primary { background: var(--primary); color: #ffffff; }
       .btn-secondary { background: #e2e8f0; color: #0f172a; }
       .btn-success { background: var(--success); color: #ffffff; }
@@ -166,9 +170,88 @@
         max-height: 92vh;
         overflow-y: auto;
       }
+      /* Vista Cliente Valoración (GitHub) */
+      #client-rating-screen {
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+      }
+      .rating-card {
+        background: #ffffff;
+        width: 100%;
+        max-width: 440px;
+        padding: 2rem;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border-color);
+        text-align: center;
+      }
+      .star {
+        font-size: 2.8rem;
+        color: #cbd5e1;
+        cursor: pointer;
+        transition: color 0.15s, transform 0.15s;
+        display: inline-block;
+        padding: 0 4px;
+        user-select: none;
+      }
+      .star:hover { transform: scale(1.08); }
     </style>
   </head>
   <body>
+
+    <!-- VISTA PÚBLICA DE VALORACIÓN PARA CLIENTE (QR -> ?id=EMP_...) -->
+    <div id="client-rating-screen" class="hidden">
+      <div class="rating-card">
+        <div id="client-loading">
+          <p style="color: var(--text-muted); font-size: 0.95rem;">Cargando establecimiento...</p>
+        </div>
+
+        <div id="client-unavailable" class="hidden">
+          <h2 style="color: var(--danger); font-size: 1.35rem; margin-bottom: 0.5rem;">Establecimiento no disponible</h2>
+          <p style="color: var(--text-muted); font-size: 0.92rem;">El enlace QR no es válido o el establecimiento no está activo.</p>
+        </div>
+
+        <div id="rating-view" class="hidden">
+          <h1 id="cli-empresa-nombre" style="color: var(--primary); font-size: 1.6rem; margin-bottom: 0.5rem;"></h1>
+          <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2rem;">¿Cómo calificarías tu experiencia hoy con nosotros?</p>
+
+          <div id="stars-container" style="margin-bottom: 2rem;">
+            <span class="star" onclick="votarEstrellas(1)">★</span>
+            <span class="star" onclick="votarEstrellas(2)">★</span>
+            <span class="star" onclick="votarEstrellas(3)">★</span>
+            <span class="star" onclick="votarEstrellas(4)">★</span>
+            <span class="star" onclick="votarEstrellas(5)">★</span>
+          </div>
+
+          <div id="feedback-form" class="hidden" style="border-top: 1px solid var(--border-color); padding-top: 1.5rem; margin-top: 1.5rem;">
+            <div class="form-group" style="text-align: left;">
+              <label style="color: var(--danger);">¿Qué podríamos haber hecho mejor?</label>
+              <textarea id="comentario-input" rows="3" placeholder="Cuéntanos tu experiencia de forma privada..."></textarea>
+            </div>
+            <div class="form-group" style="text-align: left;">
+              <label>Tu email (opcional):</label>
+              <input type="email" id="email-input" placeholder="tu@email.com">
+            </div>
+            <button id="btn-enviar-privado" class="btn btn-primary" style="width: 100%; padding: 0.85rem;" onclick="enviarComentarioPrivado()">Enviar Opinión</button>
+          </div>
+        </div>
+
+        <div id="success-view" class="hidden">
+          <h2 style="color: var(--success); font-size: 1.6rem; margin-bottom: 0.5rem;">¡Muchas gracias! 🎉</h2>
+          <p id="success-msg" style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;"></p>
+          <div id="coupon-box" class="hidden" style="background: #f0fdf4; border: 2px dashed var(--success); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+            <p style="font-size: 0.75rem; color: #166534; font-weight: bold; margin-bottom: 4px;">CUPÓN DE REGALO EXCLUSIVO:</p>
+            <h3 id="coupon-code" style="font-family: monospace; font-size: 1.5rem; color: var(--success); margin: 0;"></h3>
+            <p id="coupon-desc" style="font-size: 0.85rem; color: #166534; font-weight: 600; margin-top: 4px;"></p>
+            <p id="coupon-expiry" style="font-size: 0.8rem; color: #15803d; margin-top: 6px; font-weight: 500;"></p>
+          </div>
+          <a id="google-btn" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-success hidden" style="display: block; width: 100%; padding: 0.85rem; margin-bottom: 1rem;">🌟 Dejar reseña en Google Maps</a>
+        </div>
+      </div>
+    </div>
 
     <!-- PANTALLA DE LOGIN -->
     <div id="auth-screen" style="display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 1rem;">
@@ -582,18 +665,18 @@
       var githubAppDomain = 'https://fryserviciosdigitales.github.io/FRYhappyreview-pro';
       var directEmpresaId = '';
       var clienteQrId = '';
+      var clienteGoogleUrl = '';
+      var estrellasGlobal = 0;
+      var enviandoVoto = false;
+
       try {
         var urlParams = new URLSearchParams(window.location.search);
         directEmpresaId = String(urlParams.get('panel') || '').trim();
         clienteQrId = String(urlParams.get('id') || '').trim();
       } catch (e) {}
+
       var listaUsuariosGlobal = [];
       window.listaEmpresasGlobal = [];
-
-      // Si el cliente entra por QR con ?id=EMP_..., redirige directo a la vista de valoración del Apps Script
-      if (clienteQrId) {
-        window.location.replace(gasUrl + '?id=' + encodeURIComponent(clienteQrId));
-      }
 
       function apiGet(paramsObj) {
         var query = Object.keys(paramsObj).map(function(k) {
@@ -603,6 +686,15 @@
           if (!res.ok) throw new Error('HTTP ' + res.status);
           return res.json();
         });
+      }
+
+      function normalizarUrlExterna(url) {
+        var limpia = String(url || '').trim();
+        if (!limpia) return '';
+        if (!/^https?:\/\//i.test(limpia)) {
+          limpia = 'https://' + limpia;
+        }
+        return limpia;
       }
 
       function escJs(str) {
@@ -617,6 +709,110 @@
         setTimeout(function() { toast.remove(); }, 2500);
       }
 
+      /* ==================== VISTA CLIENTE VALORACIÓN (EN GITHUB) ==================== */
+      function iniciarVistaClienteQR(empId) {
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('app-screen').classList.add('hidden');
+        document.getElementById('app-screen').style.display = 'none';
+
+        var screen = document.getElementById('client-rating-screen');
+        screen.classList.remove('hidden');
+        screen.style.display = 'flex';
+
+        apiGet({ action: 'getEmpresa', id: empId })
+          .then(function(res) {
+            document.getElementById('client-loading').classList.add('hidden');
+            var emp = (res && res.empresa) ? res.empresa : null;
+            if (!emp || !emp.activo) {
+              document.getElementById('client-unavailable').classList.remove('hidden');
+              return;
+            }
+            var nombre = String(emp.nombre || 'Establecimiento');
+            document.title = nombre + ' - Valoración';
+            document.getElementById('cli-empresa-nombre').innerText = nombre;
+            clienteGoogleUrl = normalizarUrlExterna(emp.googleUrl || '');
+            if (clienteGoogleUrl) {
+              document.getElementById('google-btn').href = clienteGoogleUrl;
+            }
+            document.getElementById('rating-view').classList.remove('hidden');
+          })
+          .catch(function() {
+            document.getElementById('client-loading').classList.add('hidden');
+            document.getElementById('client-unavailable').classList.remove('hidden');
+          });
+      }
+
+      function votarEstrellas(n) {
+        if (enviandoVoto) return;
+        estrellasGlobal = n;
+        document.querySelectorAll('.star').forEach(function(s, idx) {
+          s.style.color = idx < n ? '#eab308' : '#cbd5e1';
+        });
+        if (n >= 4) {
+          document.getElementById('feedback-form').classList.add('hidden');
+          enviarVotoBackend(n, '', '');
+        } else {
+          document.getElementById('feedback-form').classList.remove('hidden');
+        }
+      }
+
+      function enviarComentarioPrivado() {
+        if (enviandoVoto) return;
+        enviarVotoBackend(
+          estrellasGlobal,
+          document.getElementById('comentario-input').value,
+          document.getElementById('email-input').value
+        );
+      }
+
+      function enviarVotoBackend(estrellas, comentario, email) {
+        enviandoVoto = true;
+        var btnPriv = document.getElementById('btn-enviar-privado');
+        if (btnPriv) btnPriv.disabled = true;
+
+        apiGet({
+          action: 'votar',
+          id: clienteQrId,
+          estrellas: estrellas,
+          comentario: comentario || '',
+          email: email || ''
+        })
+          .then(function(data) {
+            document.getElementById('rating-view').classList.add('hidden');
+            document.getElementById('success-view').classList.remove('hidden');
+            if (!data || !data.success) {
+              enviandoVoto = false;
+              if (btnPriv) btnPriv.disabled = false;
+              document.getElementById('success-msg').innerText = (data && data.error) ? data.error : 'No se pudo registrar la valoración.';
+              return;
+            }
+            if (estrellas >= 4) {
+              var textoCaducidad = (data.cupon && data.cupon.caducidad)
+                ? (' Válido hasta el ' + data.cupon.caducidad + '.')
+                : '';
+              document.getElementById('success-msg').innerText = '¡Muchas gracias por tu valoración de ' + estrellas + ' estrellas! Canjea tu regalo en el local.' + textoCaducidad;
+              if (data.cupon) {
+                document.getElementById('coupon-code').innerText = data.cupon.codigo || '';
+                document.getElementById('coupon-desc').innerText = data.cupon.descuento || '';
+                document.getElementById('coupon-expiry').innerText = data.cupon.caducidad ? ('📅 Válido hasta: ' + data.cupon.caducidad) : '';
+                document.getElementById('coupon-box').classList.remove('hidden');
+              }
+              if (clienteGoogleUrl) {
+                document.getElementById('google-btn').classList.remove('hidden');
+              }
+            } else {
+              document.getElementById('success-msg').innerText = 'Hemos recibido tus comentarios de forma privada. Muchas gracias por ayudarnos a mejorar.';
+            }
+          })
+          .catch(function() {
+            enviandoVoto = false;
+            if (btnPriv) btnPriv.disabled = false;
+            alert('Error al registrar la valoración.');
+          });
+      }
+
+      /* ==================== SESIÓN Y NAVEGACIÓN ==================== */
       function activarApp(usuario, esPortalDirecto) {
         usuarioActual = usuario;
         var authScreen = document.getElementById('auth-screen');
@@ -647,7 +843,10 @@
       }
 
       window.onload = function() {
-        if (clienteQrId) return;
+        if (clienteQrId) {
+          iniciarVistaClienteQR(clienteQrId);
+          return;
+        }
         if (directEmpresaId) {
           activarApp(
             { email: 'portal@empresa.com', nombre: 'Portal Establecimiento', rol: 'EMPRESA', empresaId: directEmpresaId },
