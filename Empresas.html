@@ -82,7 +82,7 @@
 
 <script>
   window.listaEmpresasGlobal = [];
-  var netlifyDomain = 'https://happyreviewpro.netlify.app';
+  var githubAppDomain = 'https://fryserviciosdigitales.github.io/FRYhappyreview-pro';
 
   function cargarEmpresasAdmin() {
     var tbody = document.getElementById('empresas-tbody');
@@ -111,7 +111,7 @@
 
     for (var i = 0; i < lista.length; i++) {
       var emp = lista[i];
-      var panelUrl = netlifyDomain + '/?panel=' + emp.id;
+      var panelUrl = githubAppDomain + '/?panel=' + encodeURIComponent(emp.id);
       
       tbody.innerHTML += '<tr>' +
         '<td><strong>' + emp.nombre + '</strong><br><small style="color: var(--primary); font-weight: 500;">🎁 ' + (emp.recompensa || 'Cupón estándar') + '</small></td>' +
@@ -252,4 +252,4 @@
     document.body.appendChild(toast);
     setTimeout(function() { toast.remove(); }, 2500);
   }
-<\/script>
+</script>
