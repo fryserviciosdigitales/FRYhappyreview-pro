@@ -142,7 +142,7 @@
 
     <script>
       var usuarioActual = null;
-      var netlifyDomain = 'https://happyreviewpro.netlify.app';
+      var githubAppDomain = 'https://fryserviciosdigitales.github.io/FRYhappyreview-pro'; //
       var directEmpresaId = '<?= directEmpresaId ?>';
       var listaUsuariosGlobal = [];
 
@@ -199,7 +199,7 @@
       function cerrarSesion() {
         usuarioActual = null;
         if (directEmpresaId) {
-          window.location.href = netlifyDomain;
+          window.top.location.href = githubAppDomain + '/'; //[cite: 5]
           return;
         }
         document.getElementById('app-screen').classList.add('hidden');
@@ -365,7 +365,7 @@
         google.script.run.withSuccessHandler(function(emp) {
           var nombreEmpresa = emp ? emp.nombre : 'Establecimiento';
           document.getElementById('poster-empresa-nombre').innerText = nombreEmpresa;
-          var targetUrl = 'https://happyreviewpro.netlify.app/?id=' + empId;
+          var targetUrl = githubAppDomain + '/?id=' + encodeURIComponent(empId); //[cite: 5]
           var qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=' + encodeURIComponent(targetUrl);
           
           document.getElementById('qr-modal-img-container').innerHTML = '<img src="' + qrApiUrl + '" alt="Código QR" style="width:200px; height:200px; display:block; margin:0 auto;">';
