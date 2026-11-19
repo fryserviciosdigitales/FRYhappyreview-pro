@@ -10,13 +10,10 @@
   </style>
 </head>
 <body>
-  <iframe id="app-frame" src=""></iframe>
+  <iframe id="app-frame" src="" referrerpolicy="no-referrer" allow="clipboard-write"></iframe>
   <script>
-    // URL de tu despliegue web de Google Apps Script
     var gasUrl = "https://script.google.com/macros/s/AKfycbxnOp3XeFIi3xXiB-_wPwkyuFfex9MOWRFg5ClCdt4G6lMCcHe4-DY97lYyf5d4hkf5Kg/exec";
-    
-    // Reenvía automáticamente los parámetros (?id=... o ?panel=...) al iframe de Google
-    var queryParams = window.location.search;
+    var queryParams = window.location.search || "";
     document.getElementById("app-frame").src = gasUrl + queryParams;
   </script>
 </body>
