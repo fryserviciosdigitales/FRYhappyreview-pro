@@ -24,11 +24,11 @@ function doGet(e) {
     var output = { success: false, message: "Acción no válida" };
     try {
       if (action === 'getEmpresa') {
-        var emp = obtenerEmpresaPorId(params.id);
-        output = emp ? { success: true, empresa: emp } : { success: false, message: "No encontrada" };
+        var empApi = obtenerEmpresaPorId(params.id);
+        output = empApi ? { success: true, empresa: empApi } : { success: false, message: "No encontrada" };
       } 
       else if (action === 'votar') {
-        output = guardarValoracion(params.id, parseInt(params.estrellas) || 0, params.comentario || '', params.email || '');
+        output = guardarValoracion(params.id, parseInt(params.estrellas, 10) || 0, params.comentario || '', params.email || '');
       }
       else if (action === 'login') {
         output = validarLogin(params.email, params.password);
@@ -75,18 +75,24 @@ function doGet(e) {
 
   // 2. CLIENTE ESCANEANDO QR (?id=...) -> Renderiza la valoración directamente de forma segura
   if (params.id) {
-    var emp = obtenerEmpresaPorId(params.id);
+    var idLimpio = String(params.id).trim();
+    var emp = obtenerEmpresaPorId(idLimpio);
     if (!emp || !emp.activo) {
       return HtmlService.createHtmlOutput('<html><body style="font-family:system-ui;text-align:center;padding:50px;"><h2 style="color:#ef4444;">Establecimiento no disponible</h2><p style="color:#64748b;">El enlace QR no es válido o el establecimiento no está activo.</p></body></html>')
-        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+        .addMetaTag('viewport', 'width=device-width, initial-scale=1.0');
     }
-    
+
+    var nombreSeguro = String(emp.nombre || 'Establecimiento');
+    var googleUrlSegura = String(emp.googleUrl || '');
+    var gasServiceUrl = ScriptApp.getService().getUrl();
+
     var htmlValoracion = `<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>${emp.nombre} - Valoración</title>
+  <title>${nombreSeguro} - Valoración</title>
   <style>
     :root { --primary: #4f46e5; --success: #22c55e; --danger: #ef4444; --text: #0f172a; --text-muted: #64748b; --border: #e2e8f0; --bg: #f8fafc; --radius: 12px; --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); }
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -105,7 +111,7 @@ function doGet(e) {
 <body>
   <div class="card" id="app-container">
     <div id="rating-view">
-      <h1 style="color: var(--primary); font-size: 1.6rem; margin-bottom: 0.5rem;">${emp.nombre}</h1>
+      <h1 style="color: var(--primary); font-size: 1.6rem; margin-bottom: 0.5rem;">${nombreSeguro}</h1>
       <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2rem;">¿Cómo calificarías tu experiencia hoy con nosotros?</p>
       <div id="stars-container" style="margin-bottom: 2rem;">
         <span class="star" onclick="votarEstrellas(1)">★</span>
@@ -123,7 +129,7 @@ function doGet(e) {
           <label>Tu email (opcional):</label>
           <input type="email" id="email-input" placeholder="tu@email.com">
         </div>
-        <button class="btn btn-primary" onclick="enviarComentarioPrivado()">Enviar Opinión</button>
+        <button id="btn-enviar-privado" class="btn btn-primary" onclick="enviarComentarioPrivado()">Enviar Opinión</button>
       </div>
     </div>
     <div id="success-view" class="hidden">
@@ -132,19 +138,25 @@ function doGet(e) {
       <div id="coupon-box" class="hidden" style="background: #f0fdf4; border: 2px dashed var(--success); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
         <p style="font-size: 0.75rem; color: #166534; font-weight: bold; margin-bottom: 4px;">CUPÓN DE REGALO EXCLUSIVO:</p>
         <h3 id="coupon-code" style="font-family: monospace; font-size: 1.5rem; color: var(--success); margin: 0;"></h3>
-        <p id="coupon-desc" style="font-size: 0.8rem; color: #166534; margin-top: 4px;"></p>
+        <p id="coupon-desc" style="font-size: 0.85rem; color: #166534; font-weight: 600; margin-top: 4px;"></p>
+        <p id="coupon-expiry" style="font-size: 0.8rem; color: #15803d; margin-top: 6px; font-weight: 500;"></p>
       </div>
-      <a id="google-btn" href="${emp.googleUrl || '#'}" target="_blank" class="btn btn-success hidden" style="margin-bottom: 1rem; text-align: center; line-height: normal;">🌟 Dejar reseña en Google Maps</a>
+      <a id="google-btn" href="${googleUrlSegura || '#'}" target="_blank" rel="noopener noreferrer" class="btn btn-success hidden" style="margin-bottom: 1rem; text-align: center; line-height: normal;">🌟 Dejar reseña en Google Maps</a>
     </div>
   </div>
   <script>
-    var empresaId = "${emp.id}";
-    var googleUrl = "${emp.googleUrl || ''}";
-    var gasUrl = "${ScriptApp.getService().getUrl()}";
+    var empresaId = ${JSON.stringify(idLimpio)};
+    var googleUrl = ${JSON.stringify(googleUrlSegura)};
+    var gasUrl = ${JSON.stringify(gasServiceUrl)};
     var estrellasGlobal = 0;
+    var enviandoVoto = false;
+
     function votarEstrellas(n) {
+      if (enviandoVoto) return;
       estrellasGlobal = n;
-      document.querySelectorAll('.star').forEach((s, idx) => { s.style.color = idx < n ? '#eab308' : '#cbd5e1'; });
+      document.querySelectorAll('.star').forEach(function(s, idx) {
+        s.style.color = idx < n ? '#eab308' : '#cbd5e1';
+      });
       if (n >= 4) {
         document.getElementById('feedback-form').classList.add('hidden');
         enviarVotoBackend(n, '', '');
@@ -152,36 +164,67 @@ function doGet(e) {
         document.getElementById('feedback-form').classList.remove('hidden');
       }
     }
+
     function enviarComentarioPrivado() {
-      enviarVotoBackend(estrellasGlobal, document.getElementById('comentario-input').value, document.getElementById('email-input').value);
+      if (enviandoVoto) return;
+      enviarVotoBackend(
+        estrellasGlobal,
+        document.getElementById('comentario-input').value,
+        document.getElementById('email-input').value
+      );
     }
+
     function enviarVotoBackend(estrellas, comentario, email) {
-      var url = gasUrl + '?action=votar&id=' + empresaId + '&estrellas=' + estrellas + '&comentario=' + encodeURIComponent(comentario) + '&email=' + encodeURIComponent(email);
-      fetch(url).then(res => res.json()).then(data => {
-        document.getElementById('rating-view').classList.add('hidden');
-        document.getElementById('success-view').classList.remove('hidden');
-        if (estrellas >= 4) {
-          document.getElementById('success-msg').innerText = '¡Muchas gracias por tu valoración de ' + estrellas + ' estrellas! Canjea tu regalo en el local.';
-          if (data && data.cupon) {
-            document.getElementById('coupon-code').innerText = data.cupon.codigo;
-            document.getElementById('coupon-desc').innerText = data.cupon.descuento;
-            document.getElementById('coupon-box').classList.remove('hidden');
+      enviandoVoto = true;
+      var btnPriv = document.getElementById('btn-enviar-privado');
+      if (btnPriv) btnPriv.disabled = true;
+
+      var url = gasUrl + '?action=votar&id=' + encodeURIComponent(empresaId) +
+        '&estrellas=' + encodeURIComponent(estrellas) +
+        '&comentario=' + encodeURIComponent(comentario || '') +
+        '&email=' + encodeURIComponent(email || '');
+
+      fetch(url)
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          enviandoVoto = false;
+          document.getElementById('rating-view').classList.add('hidden');
+          document.getElementById('success-view').classList.remove('hidden');
+          if (estrellas >= 4) {
+            var textoCaducidad = (data && data.cupon && data.cupon.caducidad)
+              ? (' Válido hasta el ' + data.cupon.caducidad + '.')
+              : '';
+            document.getElementById('success-msg').innerText = '¡Muchas gracias por tu valoración de ' + estrellas + ' estrellas! Canjea tu regalo en el local.' + textoCaducidad;
+            if (data && data.cupon) {
+              document.getElementById('coupon-code').innerText = data.cupon.codigo;
+              document.getElementById('coupon-desc').innerText = data.cupon.descuento;
+              document.getElementById('coupon-expiry').innerText = data.cupon.caducidad ? ('📅 Válido hasta: ' + data.cupon.caducidad) : '';
+              document.getElementById('coupon-box').classList.remove('hidden');
+            }
+            if (googleUrl) {
+              document.getElementById('google-btn').classList.remove('hidden');
+            }
+          } else {
+            document.getElementById('success-msg').innerText = 'Hemos recibido tus comentarios de forma privada. Muchas gracias por ayudarnos a mejorar.';
           }
-          if (googleUrl) document.getElementById('google-btn').classList.remove('hidden');
-        } else {
-          document.getElementById('success-msg').innerText = 'Hemos recibido tus comentarios de forma privada. Muchas gracias por ayudarnos a mejorar.';
-        }
-      }).catch(err => { alert('Error al registrar la valoración.'); });
+        })
+        .catch(function() {
+          enviandoVoto = false;
+          if (btnPriv) btnPriv.disabled = false;
+          alert('Error al registrar la valoración.');
+        });
     }
   <\/script>
 </body>
 </html>`;
-    return HtmlService.createHtmlOutput(htmlValoracion).setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    return HtmlService.createHtmlOutput(htmlValoracion)
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1.0');
   }
 
   // 3. PANEL DE ADMINISTRACIÓN (Sin parámetros id) -> Carga tu plantilla 'Login.html'
   var template = HtmlService.createTemplateFromFile('Login');
-  template.directEmpresaId = params.panel || '';
+  template.directEmpresaId = params.panel ? String(params.panel).trim() : '';
   
   return template.evaluate()
     .setTitle('HAPPYREVIEW PRO - SaaS de Reputación')
@@ -236,6 +279,19 @@ function inicializarHojasDB(ss) {
   }
 }
 
+function hashSHA256(input) {
+  var rawHash = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, input, Utilities.Charset.UTF_8);
+  var txtHash = '';
+  for (var i = 0; i < rawHash.length; i++) {
+    var byteValue = rawHash[i];
+    if (byteValue < 0) byteValue += 256;
+    var byteString = byteValue.toString(16);
+    if (byteString.length == 1) byteString = '0' + byteString;
+    txtHash += byteString;
+  }
+  return txtHash;
+}
+
 function listarEmpresas() {
   var ss = getDB();
   var sh = ss.getSheetByName('EMPRESAS');
@@ -244,15 +300,17 @@ function listarEmpresas() {
 
   for (var i = 1; i < data.length; i++) {
     if (data[i][0]) {
+      var valActivo = data[i][6];
+      var esActivo = (valActivo === true || String(valActivo).toLowerCase() === 'true' || String(valActivo).toLowerCase() === 'activa' || valActivo === 1);
       lista.push({
-        id: String(data[i][0]),
-        nombre: String(data[i][1]),
-        email: String(data[i][2]),
-        telefono: String(data[i][3]),
-        googleUrl: String(data[i][4]),
-        plan: String(data[i][5]),
-        activo: Boolean(data[i][6]),
-        fechaAlta: String(data[i][7]),
+        id: String(data[i][0]).trim(),
+        nombre: String(data[i][1] || ''),
+        email: String(data[i][2] || ''),
+        telefono: String(data[i][3] || ''),
+        googleUrl: String(data[i][4] || ''),
+        plan: String(data[i][5] || ''),
+        activo: esActivo,
+        fechaAlta: String(data[i][7] || ''),
         recompensa: String(data[i][8] || '')
       });
     }
@@ -266,7 +324,7 @@ function toggleActivoEmpresa(id) {
   var data = sh.getDataRange().getValues();
   
   for (var i = 1; i < data.length; i++) {
-    if (String(data[i][0]) === String(id)) {
+    if (String(data[i][0]).trim() === String(id).trim()) {
       var estadoActual = data[i][6];
       var nuevoEstado = !(estadoActual === true || String(estadoActual).toLowerCase() === 'true' || estadoActual === 1);
       sh.getRange(i + 1, 7).setValue(nuevoEstado);
