@@ -581,11 +581,19 @@
       var usuarioActual = null;
       var githubAppDomain = 'https://fryserviciosdigitales.github.io/FRYhappyreview-pro';
       var directEmpresaId = '';
+      var clienteQrId = '';
       try {
-        directEmpresaId = String(new URLSearchParams(window.location.search).get('panel') || '').trim();
+        var urlParams = new URLSearchParams(window.location.search);
+        directEmpresaId = String(urlParams.get('panel') || '').trim();
+        clienteQrId = String(urlParams.get('id') || '').trim();
       } catch (e) {}
       var listaUsuariosGlobal = [];
       window.listaEmpresasGlobal = [];
+
+      // Si el cliente entra por QR con ?id=EMP_..., redirige directo a la vista de valoración del Apps Script
+      if (clienteQrId) {
+        window.location.replace(gasUrl + '?id=' + encodeURIComponent(clienteQrId));
+      }
 
       function apiGet(paramsObj) {
         var query = Object.keys(paramsObj).map(function(k) {
@@ -639,6 +647,7 @@
       }
 
       window.onload = function() {
+        if (clienteQrId) return;
         if (directEmpresaId) {
           activarApp(
             { email: 'portal@empresa.com', nombre: 'Portal Establecimiento', rol: 'EMPRESA', empresaId: directEmpresaId },
