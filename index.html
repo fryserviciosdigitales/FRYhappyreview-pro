@@ -9,23 +9,23 @@
       margin: 0;
       padding: 0;
       height: 100%;
+      overflow: hidden;
       background: #0f172a;
-      color: #f8fafc;
-      font-family: system-ui, -apple-system, sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
     }
   </style>
 </head>
 <body>
-  <p>Cargando valoración...</p>
+  <iframe id="app-frame" src="" referrerpolicy="no-referrer" allow="clipboard-write"></iframe>
   <script>
     var gasUrl = "https://script.google.com/macros/s/AKfycbyh5EuURGrICHOQaaayQM6enInHwfBuz4Lc0qgWcFTeajKPv-asfuUb_xYgp22PHPro2g/exec";
     var queryParams = window.location.search || "";
-    var destino = gasUrl + queryParams;
-    window.location.replace(destino);
+    document.getElementById("app-frame").src = gasUrl + queryParams;
   </script>
 </body>
 </html>
