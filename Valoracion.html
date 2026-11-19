@@ -28,6 +28,8 @@
           <span class="star" data-value="4" style="font-size: 2.5rem; color: #cbd5e1; transition: color 0.2s;" onclick="seleccionarEstrellas(4)">★</span>
           <span class="star" data-value="5" style="font-size: 2.5rem; color: #cbd5e1; transition: color 0.2s;" onclick="seleccionarEstrellas(5)">★</span>
         </div>
+
+        <p id="enviando-estado" class="hidden" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">Registrando tu valoración...</p>
         
         <!-- FORMULARIO DE FEEDBACK PRIVADO (1-3 ESTRELLAS) -->
         <div id="feedback-section" class="hidden" style="text-align: left; margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
@@ -39,7 +41,7 @@
             <label style="font-size: 0.85rem;">Tu email (opcional):</label>
             <input type="email" id="email-cliente" placeholder="tu@email.com" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.9rem;">
           </div>
-          <button class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;" onclick="enviarValoracionPrivada()">Enviar Opinión</button>
+          <button id="btn-enviar-privado" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;" onclick="enviarValoracionPrivada()">Enviar Opinión</button>
         </div>
       </div>
 
@@ -51,7 +53,8 @@
         <div id="coupon-box" class="hidden" style="background: #f0fdf4; border: 2px dashed var(--success); padding: 15px; border-radius: 8px; margin-bottom: 1.5rem;">
           <p style="font-size: 0.8rem; color: #166534; font-weight: bold; margin-bottom: 5px; letter-spacing: 0.5px;">CUPÓN DE REGALO EXCLUSIVO:</p>
           <h3 id="coupon-code" style="font-family: monospace; font-size: 1.4rem; color: var(--success); margin: 0;"></h3>
-          <p id="coupon-desc" style="font-size: 0.8rem; color: #166534; margin-top: 5px;"></p>
+          <p id="coupon-desc" style="font-size: 0.85rem; color: #166534; font-weight: 600; margin-top: 5px;"></p>
+          <p id="coupon-expiry" style="font-size: 0.8rem; color: #15803d; margin-top: 6px; font-weight: 500;"></p>
         </div>
 
         <a id="btn-google-redirect" href="#" target="_blank" class="btn btn-success hidden" style="width: 100%; text-decoration: none; display: block; text-align: center; padding: 12px; margin-bottom: 1rem; font-weight: bold;">🌟 Dejar reseña en Google Maps</a>
@@ -69,6 +72,7 @@
       var empresaId = '<?= empresaId ?>';
       var empresaData = null;
       var estrellasSeleccionadas = 0;
+      var enviandoVoto = false;
 
       window.onload = function() {
         if (!empresaId) {
@@ -99,6 +103,7 @@
       }
 
       function seleccionarEstrellas(n) {
+        if (enviandoVoto) return;
         estrellasSeleccionadas = n;
         var stars = document.querySelectorAll('.star');
         for (var i = 0; i < stars.length; i++) {
@@ -114,22 +119,34 @@
       }
 
       function enviarValoracionPrivada() {
+        if (enviandoVoto) return;
         var comentario = document.getElementById('comentario-cliente').value;
         var email = document.getElementById('email-cliente').value;
         enviarValoracion(estrellasSeleccionadas, comentario, email);
       }
 
       function enviarValoracion(estrellas, comentario, email) {
+        enviandoVoto = true;
+        document.getElementById('enviando-estado').classList.remove('hidden');
+        var btnPriv = document.getElementById('btn-enviar-privado');
+        if (btnPriv) btnPriv.disabled = true;
+
         google.script.run
           .withSuccessHandler(function(res) {
+            enviandoVoto = false;
+            document.getElementById('enviando-estado').classList.add('hidden');
             document.getElementById('main-view').classList.add('hidden');
             document.getElementById('success-view').classList.remove('hidden');
             
             if (estrellas >= 4) {
-              document.getElementById('success-message').innerText = '¡Muchas gracias por tu valoración de ' + estrellas + ' estrellas! Canjea tu regalo en el establecimiento.';
+              var textoCaducidad = (res && res.cupon && res.cupon.caducidad)
+                ? (' Válido hasta el ' + res.cupon.caducidad + '.')
+                : '';
+              document.getElementById('success-message').innerText = '¡Muchas gracias por tu valoración de ' + estrellas + ' estrellas! Canjea tu regalo en el establecimiento.' + textoCaducidad;
               if (res && res.cupon) {
                 document.getElementById('coupon-code').innerText = res.cupon.codigo;
                 document.getElementById('coupon-desc').innerText = res.cupon.descuento;
+                document.getElementById('coupon-expiry').innerText = res.cupon.caducidad ? ('📅 Válido hasta: ' + res.cupon.caducidad) : '';
                 document.getElementById('coupon-box').classList.remove('hidden');
               }
               if (empresaData && empresaData.googleUrl) {
@@ -142,10 +159,15 @@
             }
           })
           .withFailureHandler(function() {
+            enviandoVoto = false;
+            document.getElementById('enviando-estado').classList.add('hidden');
+            if (btnPriv) btnPriv.disabled = false;
             alert('Error al registrar la valoración. Inténtalo de nuevo.');
           })
           .guardarValoracion(empresaId, estrellas, comentario, email);
       }
     <\/script>
+  </body>
+</html>
   </body>
 </html>
