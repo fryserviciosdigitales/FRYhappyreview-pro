@@ -81,8 +81,23 @@
 </div>
 
 <script>
-  window.listaEmpresasGlobal = [];
-  var githubAppDomain = 'https://fryserviciosdigitales.github.io/FRYhappyreview-pro';
+  window.listaEmpresasGlobal = window.listaEmpresasGlobal || [];
+  var ghEmpresasGasUrl = window.gasUrl || "https://script.google.com/macros/s/AKfycbyh5EuURGrICHOQaaayQM6enInHwfBuz4Lc0qgWcFTeajKPv-asfuUb_xYgp22PHPro2g/exec";
+  var ghEmpresasDomain = window.githubAppDomain || 'https://fryserviciosdigitales.github.io/FRYhappyreview-pro';
+
+  function ghEmpresasApiGet(paramsObj) {
+    if (typeof window.llamarApi === 'function') {
+      return window.llamarApi(paramsObj);
+    }
+    var qs = Object.keys(paramsObj).map(function(k) {
+      return encodeURIComponent(k) + '=' + encodeURIComponent(paramsObj[k] !== undefined && paramsObj[k] !== null ? paramsObj[k] : '');
+    }).join('&');
+    return fetch(ghEmpresasGasUrl + '?' + qs).then(function(res) { return res.json(); });
+  }
+
+  function escaparAttrJs(str) {
+    return String(str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  }
 
   function cargarEmpresasAdmin() {
     var tbody = document.getElementById('empresas-tbody');
@@ -90,10 +105,18 @@
       tbody.innerHTML = '<tr><td colspan="4" class="text-center" style="padding: 1.5rem; color: var(--text-muted);">Cargando establecimientos...</td></tr>';
     }
 
-    google.script.run.withSuccessHandler(function(lista) {
-      window.listaEmpresasGlobal = lista || [];
-      renderizarTablaEmpresas(window.listaEmpresasGlobal);
-    }).obtenerEmpresas();
+    ghEmpresasApiGet({ action: 'getEmpresas' })
+      .then(function(data) {
+        var lista = (data && data.empresas) ? data.empresas : (Array.isArray(data) ? data : []);
+        window.listaEmpresasGlobal = lista;
+        renderizarTablaEmpresas(window.listaEmpresasGlobal);
+      })
+      .catch(function(err) {
+        console.error(err);
+        if (tbody) {
+          tbody.innerHTML = '<tr><td colspan="4" class="text-center" style="padding: 1.5rem; color: var(--danger);">Error al cargar establecimientos.</td></tr>';
+        }
+      });
   }
 
   function renderizarTablaEmpresas(lista) {
@@ -102,7 +125,7 @@
     if (!tbody) return;
     
     tbody.innerHTML = '';
-    badgeTotal.innerText = lista.length + ' registradas';
+    if (badgeTotal) badgeTotal.innerText = lista.length + ' registradas';
 
     if (!lista || lista.length === 0) {
       tbody.innerHTML = '<tr><td colspan="4" class="text-center" style="padding: 2rem; color: var(--text-muted);">No hay empresas registradas todavía.</td></tr>';
@@ -111,17 +134,19 @@
 
     for (var i = 0; i < lista.length; i++) {
       var emp = lista[i];
-      var panelUrl = githubAppDomain + '/?panel=' + encodeURIComponent(emp.id);
+      var empIdEsc = escaparAttrJs(emp.id);
+      var panelUrl = ghEmpresasDomain + '/?panel=' + encodeURIComponent(emp.id);
+      var panelUrlEsc = escaparAttrJs(panelUrl);
       
       tbody.innerHTML += '<tr>' +
-        '<td><strong>' + emp.nombre + '</strong><br><small style="color: var(--primary); font-weight: 500;">🎁 ' + (emp.recompensa || 'Cupón estándar') + '</small></td>' +
-        '<td>' + emp.email + '<br><small style="color: var(--text-muted);">' + (emp.telefono || 'Sin teléfono') + '</small></td>' +
-        '<td><span class="badge ' + (emp.plan === 'Premium' ? 'badge-premium' : 'badge-standard') + '">' + emp.plan + '</span><br><span class="badge ' + (emp.activo ? 'badge-active' : 'badge-inactive') + '" style="margin-top: 4px;">' + (emp.activo ? 'Activa' : 'Inactiva') + '</span></td>' +
+        '<td><strong>' + (emp.nombre || '') + '</strong><br><small style="color: var(--primary); font-weight: 500;">🎁 ' + (emp.recompensa || 'Cupón estándar') + '</small></td>' +
+        '<td>' + (emp.email || '') + '<br><small style="color: var(--text-muted);">' + (emp.telefono || 'Sin teléfono') + '</small></td>' +
+        '<td><span class="badge ' + (emp.plan === 'Premium' ? 'badge-premium' : 'badge-standard') + '">' + (emp.plan || 'Standard') + '</span><br><span class="badge ' + (emp.activo ? 'badge-active' : 'badge-inactive') + '" style="margin-top: 4px;">' + (emp.activo ? 'Activa' : 'Inactiva') + '</span></td>' +
         '<td style="text-align: right; white-space: nowrap;">' +
-          '<button class="btn btn-sm btn-success" onclick="abrirModalCartelPorEmpresa(\'' + emp.id + '\')">🖨️ QR</button> ' +
-          '<button class="btn btn-sm btn-outline" onclick="prepararEdicionEmpresa(\'' + emp.id + '\')">✏️ Editar</button> ' +
-          '<button class="btn btn-sm btn-secondary" onclick="copiarEnlacePanel(\'' + panelUrl + '\')">🔗 Panel</button> ' +
-          '<button class="btn btn-sm btn-danger" onclick="eliminarEmpresa(\'' + emp.id + '\')">🗑️</button>' +
+          '<button class="btn btn-sm btn-success" onclick="abrirModalCartelPorEmpresa(\'' + empIdEsc + '\')">🖨️ QR</button> ' +
+          '<button class="btn btn-sm btn-outline" onclick="prepararEdicionEmpresa(\'' + empIdEsc + '\')">✏️ Editar</button> ' +
+          '<button class="btn btn-sm btn-secondary" onclick="copiarEnlacePanel(\'' + panelUrlEsc + '\')">🔗 Panel</button> ' +
+          '<button class="btn btn-sm btn-danger" onclick="eliminarEmpresa(\'' + empIdEsc + '\')">🗑️</button>' +
         '</td>' +
         '</tr>';
     }
@@ -134,10 +159,10 @@
       return;
     }
     var filtradas = window.listaEmpresasGlobal.filter(function(emp) {
-      return emp.nombre.toLowerCase().includes(q) ||
-             emp.email.toLowerCase().includes(q) ||
+      return (emp.nombre && emp.nombre.toLowerCase().includes(q)) ||
+             (emp.email && emp.email.toLowerCase().includes(q)) ||
              (emp.telefono && emp.telefono.toLowerCase().includes(q)) ||
-             emp.plan.toLowerCase().includes(q);
+             (emp.plan && emp.plan.toLowerCase().includes(q));
     });
     renderizarTablaEmpresas(filtradas);
   }
@@ -154,32 +179,50 @@
     var activo = document.getElementById('emp-activo').checked;
 
     var btn = document.getElementById('btn-guardar-empresa');
+    var textoOriginalBtn = id ? 'Actualizar Cambios' : 'Crear Empresa';
     btn.disabled = true;
     btn.innerText = 'Guardando...';
 
-    if (id) {
-      google.script.run.withSuccessHandler(function(res) {
-        btn.disabled = false;
-        if (res.success) { 
-          resetFormEmpresa(); 
-          cargarEmpresasAdmin(); 
-          mostrarNotificacionToast('Empresa actualizada correctamente.');
-        } else {
-          alert('Error al actualizar: ' + res.error);
+    var params = id
+      ? {
+          action: 'editarEmpresa',
+          id: id,
+          nombre: nombre,
+          email: email,
+          telefono: telefono,
+          googleUrl: googleUrl,
+          plan: plan,
+          activo: activo,
+          recompensa: recompensa
         }
-      }).editarEmpresa(id, nombre, email, telefono, googleUrl, plan, activo, recompensa);
-    } else {
-      google.script.run.withSuccessHandler(function(res) {
+      : {
+          action: 'crearEmpresa',
+          nombre: nombre,
+          email: email,
+          telefono: telefono,
+          googleUrl: googleUrl,
+          plan: plan,
+          recompensa: recompensa
+        };
+
+    ghEmpresasApiGet(params)
+      .then(function(res) {
         btn.disabled = false;
-        if (res.success) { 
-          resetFormEmpresa(); 
-          cargarEmpresasAdmin(); 
-          mostrarNotificacionToast('Empresa creada correctamente.');
+        btn.innerText = textoOriginalBtn;
+        if (res && res.success) {
+          resetFormEmpresa();
+          cargarEmpresasAdmin();
+          mostrarNotificacionToast(id ? 'Empresa actualizada correctamente.' : 'Empresa creada correctamente.');
         } else {
-          alert('Error al crear: ' + res.error);
+          alert('Error al guardar: ' + ((res && (res.error || res.message)) || 'Error desconocido'));
         }
-      }).crearEmpresa(nombre, email, telefono, googleUrl, plan, recompensa);
-    }
+      })
+      .catch(function(err) {
+        console.error(err);
+        btn.disabled = false;
+        btn.innerText = textoOriginalBtn;
+        alert('Error de conexión al guardar la empresa.');
+      });
   }
 
   function prepararEdicionEmpresa(id) {
@@ -207,7 +250,7 @@
     document.getElementById('emp-google').value = emp.googleUrl;
     document.getElementById('emp-plan').value = emp.plan;
     document.getElementById('emp-recompensa').value = emp.recompensa || '';
-    document.getElementById('emp-activo').checked = emp.activo;
+    document.getElementById('emp-activo').checked = !!emp.activo;
     
     document.getElementById('emp-activo-div').classList.remove('hidden');
     document.getElementById('btn-cancelar-empresa').classList.remove('hidden');
@@ -230,19 +273,32 @@
 
   function eliminarEmpresa(id) {
     if (confirm('¿Estás totalmente seguro de eliminar esta empresa y sus datos asociados?')) {
-      google.script.run.withSuccessHandler(function() { 
-        cargarEmpresasAdmin(); 
-        mostrarNotificacionToast('Empresa eliminada correctamente.');
-      }).eliminarEmpresa(id);
+      ghEmpresasApiGet({ action: 'eliminarEmpresa', id: id })
+        .then(function(res) {
+          if (!res || res.success === false) {
+            alert('No se pudo eliminar la empresa: ' + ((res && (res.error || res.message)) || 'Error'));
+            return;
+          }
+          cargarEmpresasAdmin();
+          mostrarNotificacionToast('Empresa eliminada correctamente.');
+        })
+        .catch(function(err) {
+          console.error(err);
+          alert('Error de conexión al eliminar la empresa.');
+        });
     }
   }
 
   function copiarEnlacePanel(url) {
-    navigator.clipboard.writeText(url).then(function() {
-      mostrarNotificacionToast('¡Enlace de acceso directo copiado al portapapeles!');
-    }, function() {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(function() {
+        mostrarNotificacionToast('¡Enlace de acceso directo copiado al portapapeles!');
+      }, function() {
+        prompt('Copia este enlace de acceso directo:', url);
+      });
+    } else {
       prompt('Copia este enlace de acceso directo:', url);
-    });
+    }
   }
 
   function mostrarNotificacionToast(mensaje) {
