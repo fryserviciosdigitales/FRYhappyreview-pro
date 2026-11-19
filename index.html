@@ -1,313 +1,334 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>HAPPYREVIEW PRO</title>
-  <style>
-    :root {
-      --primary: #4f46e5;
-      --primary-hover: #4338ca;
-      --success: #22c55e;
-      --danger: #ef4444;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
-      --bg: #f8fafc;
-      --radius: 14px;
-      --shadow: 0 12px 30px -8px rgba(15, 23, 42, 0.08);
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 1rem;
-    }
-    .card {
-      background: #ffffff;
-      width: 100%;
-      max-width: 440px;
-      padding: 2rem;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-      text-align: center;
-    }
-    .hidden { display: none !important; }
-    .btn {
-      display: inline-block;
-      width: 100%;
-      padding: 0.85rem 1rem;
-      border-radius: 10px;
-      border: none;
-      font-weight: 600;
-      font-size: 1rem;
-      cursor: pointer;
-      text-decoration: none;
-    }
-    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn-primary { background: var(--primary); color: #ffffff; }
-    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
-    .btn-success { background: var(--success); color: #ffffff; }
-    .form-group { margin-bottom: 1rem; text-align: left; }
-    .form-group label {
-      display: block;
-      font-size: 0.82rem;
-      font-weight: 700;
-      margin-bottom: 0.35rem;
-      color: var(--text);
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
-    .form-group input, .form-group textarea {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      font-family: inherit;
-      font-size: 0.95rem;
-      color: var(--text);
-    }
-    .stars { display: flex; justify-content: center; gap: 6px; margin-bottom: 1.5rem; }
-    .star { font-size: 2.75rem; color: #cbd5e1; cursor: pointer; padding: 0 4px; }
-    .coupon-box {
-      background: #f0fdf4;
-      border: 2px dashed var(--success);
-      padding: 1rem;
-      border-radius: 10px;
-      margin-bottom: 1.5rem;
-    }
-    .coupon-code { font-family: monospace; font-size: 1.5rem; color: #15803d; font-weight: 700; }
-    .msg-error { color: var(--danger); font-size: 0.88rem; margin-top: 0.75rem; }
-  </style>
-</head>
-<body>
-  <div class="card" id="app-container">
-    <!-- LOGIN -->
-    <div id="login-view" class="hidden">
-      <h1 style="color: var(--primary); font-size: 1.6rem; margin-bottom: 0.25rem;">HAPPYREVIEW PRO</h1>
-      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Plataforma SaaS de Reputación y Fidelización</p>
-      <form id="login-form" onsubmit="iniciarSesion(event)">
-        <div class="form-group">
-          <label for="login-email">Correo electrónico</label>
-          <input id="login-email" type="email" required placeholder="correo@ejemplo.com">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HAPPYREVIEW PRO</title>
+    <style>
+      :root {
+        --primary: #4f46e5;
+        --primary-hover: #4338ca;
+        --success: #22c55e;
+        --danger: #ef4444;
+        --text: #0f172a;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --bg: #f8fafc;
+        --radius: 12px;
+        --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 1rem;
+      }
+      .card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        width: 100%;
+        max-width: 480px;
+        text-align: center;
+      }
+      .hidden { display: none !important; }
+      .form-group { margin-bottom: 1rem; text-align: left; }
+      .form-group label {
+        display: block;
+        margin-bottom: 0.35rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text);
+      }
+      .form-group input,
+      .form-group textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 0.95rem;
+        color: var(--text);
+        background: #ffffff;
+      }
+      .btn {
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        padding: 0.85rem 1rem;
+        transition: opacity 0.2s ease, background-color 0.2s ease;
+        width: 100%;
+      }
+      .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+      .btn-primary { background: var(--primary); color: #ffffff; }
+      .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+      .btn-success { background: var(--success); color: #ffffff; }
+      .msg-error {
+        color: var(--danger);
+        font-size: 0.88rem;
+        margin-top: 0.75rem;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="card" id="app-card">
+
+      <!-- INICIO DE SESIÓN (cuando no hay ?id=...) -->
+      <div id="login-view" class="hidden">
+        <h1 style="color: var(--primary); font-size: 1.55rem; margin-bottom: 0.25rem;">HAPPYREVIEW PRO</h1>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Plataforma SaaS de Reputación y Fidelización</p>
+
+        <form id="login-form" onsubmit="iniciarSesion(event)">
+          <div class="form-group">
+            <label for="login-email">CORREO ELECTRÓNICO</label>
+            <input id="login-email" type="email" required autocomplete="username" placeholder="correo@ejemplo.com">
+          </div>
+          <div class="form-group">
+            <label for="login-password">CONTRASEÑA</label>
+            <input id="login-password" type="password" required autocomplete="current-password" placeholder="••••••••">
+          </div>
+          <button id="btn-login" type="submit" class="btn btn-primary" style="margin-top: 0.25rem;">Iniciar Sesión</button>
+          <p id="login-error" class="msg-error hidden"></p>
+        </form>
+
+        <div id="login-ok-box" class="hidden" style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border-color); text-align: left;">
+          <p id="login-usuario-info" style="font-size: 0.92rem; font-weight: 600; color: var(--text);"></p>
         </div>
-        <div class="form-group">
-          <label for="login-password">Contraseña</label>
-          <input id="login-password" type="password" required placeholder="••••••••">
+      </div>
+
+      <!-- PANTALLA DE CARGA (cuando hay ?id=...) -->
+      <div id="loading-view" class="hidden">
+        <p style="color: var(--text-muted); padding: 2rem; font-size: 0.95rem;">Cargando establecimiento...</p>
+      </div>
+
+      <!-- PANTALLA PRINCIPAL DE ESTRELLAS -->
+      <div id="main-view" class="hidden">
+        <h1 id="empresa-nombre" style="color: var(--primary); font-size: 1.5rem; margin-bottom: 0.5rem;">Establecimiento</h1>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">¿Cómo calificarías tu experiencia hoy con nosotros?</p>
+
+        <div id="stars-container" style="display: flex; justify-content: center; gap: 8px; margin-bottom: 1.5rem; cursor: pointer;">
+          <span class="star" data-value="1" style="font-size: 2.5rem; color: #cbd5e1; transition: color 0.2s;" onclick="seleccionarEstrellas(1)">★</span>
+          <span class="star" data-value="2" style="font-size: 2.5rem; color: #cbd5e1; transition: color 0.2s;" onclick="seleccionarEstrellas(2)">★</span>
+          <span class="star" data-value="3" style="font-size: 2.5rem; color: #cbd5e1; transition: color 0.2s;" onclick="seleccionarEstrellas(3)">★</span>
+          <span class="star" data-value="4" style="font-size: 2.5rem; color: #cbd5e1; transition: color 0.2s;" onclick="seleccionarEstrellas(4)">★</span>
+          <span class="star" data-value="5" style="font-size: 2.5rem; color: #cbd5e1; transition: color 0.2s;" onclick="seleccionarEstrellas(5)">★</span>
         </div>
-        <button id="btn-login" type="submit" class="btn btn-primary">Iniciar Sesión</button>
-        <p id="login-error" class="msg-error hidden"></p>
-      </form>
-      <div id="sesion-activa-box" class="hidden" style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border); text-align: left;">
-        <p id="sesion-usuario-texto" style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem;"></p>
-        <p style="font-size: 0.82rem; color: var(--text-muted);">Sesión validada con el backend.</p>
-      </div>
-    </div>
 
-    <!-- VALORACIÓN -->
-    <div id="loading-view" class="hidden">
-      <p style="color: var(--text-muted); padding: 1.5rem 0;">Cargando establecimiento...</p>
-    </div>
-    <div id="rating-view" class="hidden">
-      <h1 id="empresa-nombre" style="color: var(--primary); font-size: 1.6rem; margin-bottom: 0.5rem;">Establecimiento</h1>
-      <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.75rem;">¿Cómo calificarías tu experiencia hoy con nosotros?</p>
-      <div id="stars-container" class="stars">
-        <span class="star" onclick="votarEstrellas(1)">★</span>
-        <span class="star" onclick="votarEstrellas(2)">★</span>
-        <span class="star" onclick="votarEstrellas(3)">★</span>
-        <span class="star" onclick="votarEstrellas(4)">★</span>
-        <span class="star" onclick="votarEstrellas(5)">★</span>
-      </div>
-      <p id="enviando-estado" class="hidden" style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1rem;">Registrando tu valoración...</p>
-      <div id="feedback-form" class="hidden" style="border-top: 1px solid var(--border); padding-top: 1.25rem; margin-top: 1rem;">
-        <div class="form-group">
-          <label style="color: var(--danger);">¿Qué podríamos haber hecho mejor?</label>
-          <textarea id="comentario-input" rows="3" placeholder="Cuéntanos tu experiencia de forma privada..."></textarea>
+        <p id="enviando-estado" class="hidden" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">Registrando tu valoración...</p>
+
+        <div id="feedback-section" class="hidden" style="text-align: left; margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+          <div class="form-group">
+            <label style="font-size: 0.85rem; font-weight: bold; color: var(--danger);">¿Qué podríamos haber hecho mejor?</label>
+            <textarea id="comentario-cliente" rows="3" placeholder="Cuéntanos tu experiencia de forma privada..."></textarea>
+          </div>
+          <div class="form-group">
+            <label style="font-size: 0.85rem;">Tu email (opcional):</label>
+            <input type="email" id="email-cliente" placeholder="tu@email.com">
+          </div>
+          <button id="btn-enviar-privado" class="btn btn-primary" style="margin-top: 0.5rem;" onclick="enviarValoracionPrivada()">Enviar Opinión</button>
         </div>
-        <div class="form-group">
-          <label>Tu email (opcional):</label>
-          <input type="email" id="email-input" placeholder="tu@email.com">
+      </div>
+
+      <!-- PANTALLA DE ÉXITO Y CUPÓN -->
+      <div id="success-view" class="hidden">
+        <h2 style="color: var(--success); margin-bottom: 0.5rem; font-size: 1.5rem;">¡Muchas gracias! 🎉</h2>
+        <p id="success-message" style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;"></p>
+
+        <div id="coupon-box" class="hidden" style="background: #f0fdf4; border: 2px dashed var(--success); padding: 15px; border-radius: 8px; margin-bottom: 1.5rem;">
+          <p style="font-size: 0.8rem; color: #166534; font-weight: bold; margin-bottom: 5px; letter-spacing: 0.5px;">CUPÓN DE REGALO EXCLUSIVO:</p>
+          <h3 id="coupon-code" style="font-family: monospace; font-size: 1.4rem; color: var(--success); margin: 0;"></h3>
+          <p id="coupon-desc" style="font-size: 0.85rem; color: #166534; font-weight: 600; margin-top: 5px;"></p>
+          <p id="coupon-expiry" style="font-size: 0.8rem; color: #15803d; margin-top: 6px; font-weight: 500;"></p>
         </div>
-        <button id="btn-enviar-privado" class="btn btn-primary" onclick="enviarComentarioPrivado()">Enviar Opinión</button>
+
+        <a id="btn-google-redirect" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-success hidden" style="text-decoration: none; display: block; text-align: center; padding: 12px; margin-bottom: 1rem; font-weight: bold;">🌟 Dejar reseña en Google Maps</a>
       </div>
-    </div>
 
-    <div id="success-view" class="hidden">
-      <h2 style="color: var(--success); font-size: 1.6rem; margin-bottom: 0.5rem;">¡Muchas gracias! 🎉</h2>
-      <p id="success-msg" style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;"></p>
-      <div id="coupon-box" class="coupon-box hidden">
-        <p style="font-size: 0.75rem; color: #166534; font-weight: 700;">CUPÓN DE REGALO EXCLUSIVO:</p>
-        <h3 id="coupon-code" class="coupon-code"></h3>
-        <p id="coupon-desc" style="font-size: 0.9rem; color: #166534; font-weight: 600; margin-top: 4px;"></p>
-        <p id="coupon-expiry" style="font-size: 0.8rem; color: #15803d; margin-top: 6px;"></p>
+      <!-- PANTALLA DE ERROR / NO DISPONIBLE -->
+      <div id="error-view" class="hidden">
+        <h2 style="color: var(--danger); margin-bottom: 0.5rem; font-size: 1.3rem;">Establecimiento no disponible</h2>
+        <p id="error-message" style="color: var(--text-muted); font-size: 0.9rem;">El enlace QR no es válido, ha caducado o el establecimiento está inactivo.</p>
       </div>
-      <a id="google-btn" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-success hidden">🌟 Dejar reseña en Google Maps</a>
+
     </div>
 
-    <div id="error-view" class="hidden">
-      <h2 style="color: var(--danger); font-size: 1.35rem; margin-bottom: 0.5rem;">Establecimiento no disponible</h2>
-      <p id="error-detail" style="color: var(--text-muted); font-size: 0.92rem;">El enlace QR no es válido o el establecimiento no está activo.</p>
-    </div>
-  </div>
+    <script>
+      var gasUrl = "https://script.google.com/macros/s/AKfycbyh5EuURGrICHOQaaayQM6enInHwfBuz4Lc0qgWcFTeajKPv-asfuUb_xYgp22PHPro2g/exec";
+      var empresaId = "";
+      try {
+        empresaId = String(new URLSearchParams(window.location.search).get("id") || "").trim();
+      } catch (e) {}
 
-  <script>
-    var gasUrl = "https://script.google.com/macros/s/AKfycbyh5EuURGrICHOQaaayQM6enInHwfBuz4Lc0qgWcFTeajKPv-asfuUb_xYgp22PHPro2g/exec";
-    var empresaId = "";
-    try {
-      empresaId = String(new URLSearchParams(window.location.search).get("id") || "").trim();
-    } catch (e) {}
+      var empresaData = null;
+      var estrellasSeleccionadas = 0;
+      var enviandoVoto = false;
 
-    var empresaData = null;
-    var estrellasGlobal = 0;
-    var enviandoVoto = false;
-
-    window.addEventListener("DOMContentLoaded", function () {
-      if (!empresaId) {
-        document.getElementById("login-view").classList.remove("hidden");
-        return;
+      function normalizarUrlExterna(url) {
+        var limpia = String(url || "").trim();
+        if (!limpia) return "";
+        if (!/^https?:\/\//i.test(limpia)) {
+          limpia = "https://" + limpia;
+        }
+        return limpia;
       }
 
-      document.getElementById("loading-view").classList.remove("hidden");
-      fetch(gasUrl + "?action=getEmpresa&id=" + encodeURIComponent(empresaId))
-        .then(function (res) { return res.json(); })
-        .then(function (data) {
-          document.getElementById("loading-view").classList.add("hidden");
-          var emp = data && data.empresa ? data.empresa : null;
-          if (!data || !data.success || !emp || !emp.activo) {
-            mostrarError("El enlace QR no es válido o el establecimiento no está activo.");
-            return;
-          }
-          empresaData = emp;
-          document.getElementById("empresa-nombre").innerText = emp.nombre || "Establecimiento";
-          document.title = (emp.nombre || "Valoración") + " - HAPPYREVIEW PRO";
-          document.getElementById("rating-view").classList.remove("hidden");
-        })
-        .catch(function () {
-          mostrarError("No se pudo conectar con el servicio de valoración.");
-        });
-    });
+      window.onload = function() {
+        if (!empresaId) {
+          document.getElementById("login-view").classList.remove("hidden");
+          return;
+        }
 
-    function iniciarSesion(ev) {
-      ev.preventDefault();
-      var btn = document.getElementById("btn-login");
-      var errEl = document.getElementById("login-error");
-      errEl.classList.add("hidden");
-      btn.disabled = true;
+        document.getElementById("loading-view").classList.remove("hidden");
+        var url = gasUrl + "?action=getEmpresa&id=" + encodeURIComponent(empresaId);
+        fetch(url)
+          .then(function(res) { return res.json(); })
+          .then(function(data) {
+            document.getElementById("loading-view").classList.add("hidden");
+            var emp = data && data.empresa ? data.empresa : null;
+            if (!data || !data.success || !emp || !emp.activo) {
+              mostrarError("El enlace QR no es válido, ha caducado o el establecimiento está inactivo.");
+              return;
+            }
+            empresaData = emp;
+            document.getElementById("empresa-nombre").innerText = emp.nombre || "Establecimiento";
+            document.title = (emp.nombre || "Valoración") + " - HAPPYREVIEW PRO";
+            document.getElementById("main-view").classList.remove("hidden");
+          })
+          .catch(function() {
+            mostrarError("No se pudo conectar con el servicio de valoración.");
+          });
+      };
 
-      var email = document.getElementById("login-email").value.trim();
-      var password = document.getElementById("login-password").value;
+      function iniciarSesion(event) {
+        event.preventDefault();
+        var btn = document.getElementById("btn-login");
+        var errBox = document.getElementById("login-error");
+        errBox.classList.add("hidden");
+        btn.disabled = true;
 
-      fetch(gasUrl + "?action=login&email=" + encodeURIComponent(email) + "&password=" + encodeURIComponent(password))
-        .then(function (res) { return res.json(); })
-        .then(function (data) {
-          btn.disabled = false;
-          if (!data || !data.success) {
-            errEl.innerText = (data && data.error) ? data.error : "Credenciales incorrectas";
-            errEl.classList.remove("hidden");
-            return;
-          }
-          var u = data.usuario || {};
-          var box = document.getElementById("sesion-activa-box");
-          document.getElementById("sesion-usuario-texto").innerText =
-            (u.nombre || u.email || "Usuario") + (u.rol ? (" (" + u.rol + ")") : "");
-          box.classList.remove("hidden");
-        })
-        .catch(function () {
-          btn.disabled = false;
-          errEl.innerText = "Error al conectar con el servidor.";
-          errEl.classList.remove("hidden");
-        });
-    }
+        var email = document.getElementById("login-email").value.trim();
+        var password = document.getElementById("login-password").value;
 
-    function mostrarError(mensaje) {
-      document.getElementById("loading-view").classList.add("hidden");
-      if (mensaje) document.getElementById("error-detail").innerText = mensaje;
-      document.getElementById("error-view").classList.remove("hidden");
-    }
+        var url = gasUrl + "?action=login&email=" + encodeURIComponent(email) +
+          "&password=" + encodeURIComponent(password);
 
-    function votarEstrellas(n) {
-      if (enviandoVoto) return;
-      estrellasGlobal = n;
-      document.querySelectorAll(".star").forEach(function (s, idx) {
-        s.style.color = idx < n ? "#eab308" : "#cbd5e1";
-      });
-      if (n >= 4) {
-        document.getElementById("feedback-form").classList.add("hidden");
-        enviarVotoBackend(n, "", "");
-      } else {
-        document.getElementById("feedback-form").classList.remove("hidden");
+        fetch(url)
+          .then(function(res) { return res.json(); })
+          .then(function(data) {
+            btn.disabled = false;
+            if (!data || !data.success) {
+              errBox.innerText = (data && data.error) ? data.error : "Credenciales incorrectas";
+              errBox.classList.remove("hidden");
+              return;
+            }
+            var u = data.usuario || {};
+            document.getElementById("login-usuario-info").innerText =
+              "Sesión iniciada: " + (u.nombre || u.email || "") + (u.rol ? (" (" + u.rol + ")") : "");
+            document.getElementById("login-ok-box").classList.remove("hidden");
+          })
+          .catch(function() {
+            btn.disabled = false;
+            errBox.innerText = "Error al conectar con el servidor.";
+            errBox.classList.remove("hidden");
+          });
       }
-    }
 
-    function enviarComentarioPrivado() {
-      if (enviandoVoto) return;
-      enviarVotoBackend(
-        estrellasGlobal,
-        document.getElementById("comentario-input").value,
-        document.getElementById("email-input").value
-      );
-    }
+      function mostrarError(mensaje) {
+        document.getElementById("loading-view").classList.add("hidden");
+        if (mensaje) {
+          document.getElementById("error-message").innerText = mensaje;
+        }
+        document.getElementById("error-view").classList.remove("hidden");
+      }
 
-    function enviarVotoBackend(estrellas, comentario, email) {
-      enviandoVoto = true;
-      document.getElementById("enviando-estado").classList.remove("hidden");
-      var btnPriv = document.getElementById("btn-enviar-privado");
-      if (btnPriv) btnPriv.disabled = true;
+      function seleccionarEstrellas(n) {
+        if (enviandoVoto) return;
+        estrellasSeleccionadas = n;
+        var stars = document.querySelectorAll(".star");
+        for (var i = 0; i < stars.length; i++) {
+          stars[i].style.color = (i < n) ? "#eab308" : "#cbd5e1";
+        }
 
-      var url = gasUrl + "?action=votar&id=" + encodeURIComponent(empresaId) +
-        "&estrellas=" + encodeURIComponent(estrellas) +
-        "&comentario=" + encodeURIComponent(comentario || "") +
-        "&email=" + encodeURIComponent(email || "");
+        if (n >= 4) {
+          document.getElementById("feedback-section").classList.add("hidden");
+          enviarValoracion(n, "", "");
+        } else {
+          document.getElementById("feedback-section").classList.remove("hidden");
+        }
+      }
 
-      fetch(url)
-        .then(function (res) { return res.json(); })
-        .then(function (data) {
-          enviandoVoto = false;
-          document.getElementById("enviando-estado").classList.add("hidden");
-          if (!data || !data.success) {
-            if (btnPriv) btnPriv.disabled = false;
-            alert((data && data.error) ? data.error : "No se pudo registrar la valoración.");
-            return;
-          }
-          document.getElementById("rating-view").classList.add("hidden");
-          document.getElementById("success-view").classList.remove("hidden");
-          if (estrellas >= 4) {
-            var textoCaducidad = (data.cupon && data.cupon.caducidad)
-              ? (" Válido hasta el " + data.cupon.caducidad + ".")
-              : "";
-            document.getElementById("success-msg").innerText =
-              "¡Muchas gracias por tu valoración de " + estrellas + " estrellas! Canjea tu regalo en el local." + textoCaducidad;
-            if (data.cupon) {
-              document.getElementById("coupon-code").innerText = data.cupon.codigo || "";
-              document.getElementById("coupon-desc").innerText = data.cupon.descuento || "";
-              document.getElementById("coupon-expiry").innerText = data.cupon.caducidad
-                ? ("📅 Válido hasta: " + data.cupon.caducidad)
+      function enviarValoracionPrivada() {
+        if (enviandoVoto) return;
+        var comentario = document.getElementById("comentario-cliente").value;
+        var email = document.getElementById("email-cliente").value;
+        enviarValoracion(estrellasSeleccionadas, comentario, email);
+      }
+
+      function enviarValoracion(estrellas, comentario, email) {
+        enviandoVoto = true;
+        document.getElementById("enviando-estado").classList.remove("hidden");
+        var btnPriv = document.getElementById("btn-enviar-privado");
+        if (btnPriv) btnPriv.disabled = true;
+
+        var url = gasUrl + "?action=votar&id=" + encodeURIComponent(empresaId) +
+          "&estrellas=" + encodeURIComponent(estrellas) +
+          "&comentario=" + encodeURIComponent(comentario || "") +
+          "&email=" + encodeURIComponent(email || "");
+
+        fetch(url)
+          .then(function(res) { return res.json(); })
+          .then(function(res) {
+            document.getElementById("enviando-estado").classList.add("hidden");
+
+            if (!res || !res.success) {
+              enviandoVoto = false;
+              if (btnPriv) btnPriv.disabled = false;
+              alert((res && res.error) ? res.error : "No se pudo registrar la valoración.");
+              return;
+            }
+
+            document.getElementById("main-view").classList.add("hidden");
+            document.getElementById("success-view").classList.remove("hidden");
+
+            if (estrellas >= 4) {
+              var textoCaducidad = (res.cupon && res.cupon.caducidad)
+                ? (" Válido hasta el " + res.cupon.caducidad + ".")
                 : "";
-              document.getElementById("coupon-box").classList.remove("hidden");
+              document.getElementById("success-message").innerText = "¡Muchas gracias por tu valoración de " + estrellas + " estrellas! Canjea tu regalo en el establecimiento." + textoCaducidad;
+              if (res.cupon) {
+                document.getElementById("coupon-code").innerText = res.cupon.codigo || "";
+                document.getElementById("coupon-desc").innerText = res.cupon.descuento || "";
+                document.getElementById("coupon-expiry").innerText = res.cupon.caducidad ? ("📅 Válido hasta: " + res.cupon.caducidad) : "";
+                document.getElementById("coupon-box").classList.remove("hidden");
+              }
+              var urlGoogle = normalizarUrlExterna(empresaData && empresaData.googleUrl);
+              if (urlGoogle) {
+                var btnG = document.getElementById("btn-google-redirect");
+                btnG.href = urlGoogle;
+                btnG.classList.remove("hidden");
+              }
+            } else {
+              document.getElementById("success-message").innerText = "Hemos recibido tus comentarios de forma privada. Muchas gracias por ayudarnos a mejorar.";
             }
-            if (empresaData && empresaData.googleUrl) {
-              var gBtn = document.getElementById("google-btn");
-              gBtn.href = empresaData.googleUrl;
-              gBtn.classList.remove("hidden");
-            }
-          } else {
-            document.getElementById("success-msg").innerText =
-              "Hemos recibido tus comentarios de forma privada. Muchas gracias por ayudarnos a mejorar.";
-          }
-        })
-        .catch(function () {
-          enviandoVoto = false;
-          document.getElementById("enviando-estado").classList.add("hidden");
-          if (btnPriv) btnPriv.disabled = false;
-          alert("Error al registrar la valoración.");
-        });
-    }
-  </script>
-</body>
+          })
+          .catch(function() {
+            enviandoVoto = false;
+            document.getElementById("enviando-estado").classList.add("hidden");
+            if (btnPriv) btnPriv.disabled = false;
+            alert("Error al registrar la valoración. Inténtalo de nuevo.");
+          });
+      }
+    </script>
+  </body>
 </html>
