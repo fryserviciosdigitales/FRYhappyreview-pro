@@ -10,6 +10,15 @@ function escapeHtml(texto) {
     .replace(/"/g, '&quot;');
 }
 
+function normalizarUrlExterna(url) {
+  var limpia = String(url || '').trim();
+  if (!limpia) return '';
+  if (!/^https?:\/\//i.test(limpia)) {
+    limpia = 'https://' + limpia;
+  }
+  return limpia;
+}
+
 function doGet(e) {
   var params = (e && e.parameter) ? e.parameter : {};
   var action = params.action || '';
@@ -93,7 +102,7 @@ function doGet(e) {
 
     var nombreRaw = String(emp.nombre || 'Establecimiento');
     var nombreSeguro = escapeHtml(nombreRaw);
-    var googleUrlRaw = String(emp.googleUrl || '');
+    var googleUrlRaw = normalizarUrlExterna(emp.googleUrl || '');
     var googleUrlSegura = escapeHtml(googleUrlRaw);
     var gasServiceUrl = ScriptApp.getService().getUrl();
 
@@ -110,6 +119,7 @@ function doGet(e) {
     .card { background: #fff; width: 100%; max-width: 440px; padding: 2rem; border-radius: var(--radius); box-shadow: var(--shadow); text-align: center; }
     .hidden { display: none !important; }
     .btn { display: inline-block; width: 100%; padding: 0.85rem; border-radius: 8px; border: none; font-weight: 600; font-size: 1rem; cursor: pointer; text-decoration: none; transition: background 0.2s; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-success { background: var(--success); color: #fff; }
     .form-group { margin-bottom: 1rem; text-align: left; }
@@ -197,17 +207,22 @@ function doGet(e) {
       fetch(url)
         .then(function(res) { return res.json(); })
         .then(function(data) {
-          enviandoVoto = false;
           document.getElementById('rating-view').classList.add('hidden');
           document.getElementById('success-view').classList.remove('hidden');
+          if (!data || !data.success) {
+            enviandoVoto = false;
+            if (btnPriv) btnPriv.disabled = false;
+            document.getElementById('success-msg').innerText = (data && data.error) ? data.error : 'No se pudo registrar la valoración.';
+            return;
+          }
           if (estrellas >= 4) {
-            var textoCaducidad = (data && data.cupon && data.cupon.caducidad)
+            var textoCaducidad = (data.cupon && data.cupon.caducidad)
               ? (' Válido hasta el ' + data.cupon.caducidad + '.')
               : '';
             document.getElementById('success-msg').innerText = '¡Muchas gracias por tu valoración de ' + estrellas + ' estrellas! Canjea tu regalo en el local.' + textoCaducidad;
-            if (data && data.cupon) {
-              document.getElementById('coupon-code').innerText = data.cupon.codigo;
-              document.getElementById('coupon-desc').innerText = data.cupon.descuento;
+            if (data.cupon) {
+              document.getElementById('coupon-code').innerText = data.cupon.codigo || '';
+              document.getElementById('coupon-desc').innerText = data.cupon.descuento || '';
               document.getElementById('coupon-expiry').innerText = data.cupon.caducidad ? ('📅 Válido hasta: ' + data.cupon.caducidad) : '';
               document.getElementById('coupon-box').classList.remove('hidden');
             }
@@ -302,6 +317,35 @@ function hashSHA256(input) {
   return txtHash;
 }
 
+function validarLogin(email, password) {
+  var ss = getDB();
+  var sh = ss.getSheetByName('USUARIOS');
+  var data = sh.getDataRange().getValues();
+  var passHash = hashSHA256(password);
+
+  for (var i = 1; i < data.length; i++) {
+    if (
+      String(data[i][0]).toLowerCase() === String(email).toLowerCase() &&
+      String(data[i][1]) === String(passHash)
+    ) {
+      return {
+        success: true,
+        usuario: {
+          nombre: String(data[i][2] || ''),
+          rol: String(data[i][3] || ''),
+          email: String(data[i][0] || ''),
+          empresaId: String(data[i][4] || '')
+        }
+      };
+    }
+  }
+
+  return {
+    success: false,
+    error: 'Credenciales incorrectas'
+  };
+}
+
 function listarEmpresas() {
   var ss = getDB();
   var sh = ss.getSheetByName('EMPRESAS');
@@ -343,6 +387,10 @@ function toggleActivoEmpresa(id) {
     }
   }
   return { success: false, message: "Empresa no encontrada" };
+}
+
+function obtenerEmpresas() {
+  return listarEmpresas();
 }
 
 function getEmpresa(id) {
