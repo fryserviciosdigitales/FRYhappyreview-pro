@@ -2,6 +2,14 @@
  * HAPPYREVIEW PRO - Code.gs (Definitivo y Blindado contra errores de QR)
  */
 
+function escapeHtml(texto) {
+  return String(texto === undefined || texto === null ? '' : texto)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 function doGet(e) {
   var params = (e && e.parameter) ? e.parameter : {};
   var action = params.action || '';
@@ -83,8 +91,10 @@ function doGet(e) {
         .addMetaTag('viewport', 'width=device-width, initial-scale=1.0');
     }
 
-    var nombreSeguro = String(emp.nombre || 'Establecimiento');
-    var googleUrlSegura = String(emp.googleUrl || '');
+    var nombreRaw = String(emp.nombre || 'Establecimiento');
+    var nombreSeguro = escapeHtml(nombreRaw);
+    var googleUrlRaw = String(emp.googleUrl || '');
+    var googleUrlSegura = escapeHtml(googleUrlRaw);
     var gasServiceUrl = ScriptApp.getService().getUrl();
 
     var htmlValoracion = `<!DOCTYPE html>
@@ -146,7 +156,7 @@ function doGet(e) {
   </div>
   <script>
     var empresaId = ${JSON.stringify(idLimpio)};
-    var googleUrl = ${JSON.stringify(googleUrlSegura)};
+    var googleUrl = ${JSON.stringify(googleUrlRaw)};
     var gasUrl = ${JSON.stringify(gasServiceUrl)};
     var estrellasGlobal = 0;
     var enviandoVoto = false;
@@ -315,6 +325,7 @@ function listarEmpresas() {
       });
     }
   }
+
   return lista;
 }
 
