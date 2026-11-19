@@ -113,7 +113,7 @@
     </div>
 
     <script>
-      var gasUrl = "https://script.google.com/macros/s/AKfycbxnOp3XeFIi3xXiB-_wPwkyuFfex9MOWRFg5ClCdt4G6lMCcHe4-DY97lYyf5d4hkf5Kg/exec";
+      var gasUrl = "https://script.google.com/macros/s/AKfycbyh5EuURGrICHOQaaayQM6enInHwfBuz4Lc0qgWcFTeajKPv-asfuUb_xYgp22PHPro2g/exec";
       var empresaId = "";
       try {
         empresaId = String(new URLSearchParams(window.location.search).get('id') || '').trim();
@@ -122,6 +122,15 @@
       var empresaData = null;
       var estrellasSeleccionadas = 0;
       var enviandoVoto = false;
+
+      function normalizarUrlExterna(url) {
+        var limpia = String(url || '').trim();
+        if (!limpia) return '';
+        if (!/^https?:\/\//i.test(limpia)) {
+          limpia = 'https://' + limpia;
+        }
+        return limpia;
+      }
 
       window.onload = function() {
         if (!empresaId) {
@@ -191,10 +200,10 @@
         fetch(url)
           .then(function(res) { return res.json(); })
           .then(function(res) {
-            enviandoVoto = false;
             document.getElementById('enviando-estado').classList.add('hidden');
 
             if (!res || !res.success) {
+              enviandoVoto = false;
               if (btnPriv) btnPriv.disabled = false;
               alert((res && res.error) ? res.error : 'No se pudo registrar la valoración.');
               return;
@@ -209,14 +218,15 @@
                 : '';
               document.getElementById('success-message').innerText = '¡Muchas gracias por tu valoración de ' + estrellas + ' estrellas! Canjea tu regalo en el establecimiento.' + textoCaducidad;
               if (res.cupon) {
-                document.getElementById('coupon-code').innerText = res.cupon.codigo;
-                document.getElementById('coupon-desc').innerText = res.cupon.descuento;
+                document.getElementById('coupon-code').innerText = res.cupon.codigo || '';
+                document.getElementById('coupon-desc').innerText = res.cupon.descuento || '';
                 document.getElementById('coupon-expiry').innerText = res.cupon.caducidad ? ('📅 Válido hasta: ' + res.cupon.caducidad) : '';
                 document.getElementById('coupon-box').classList.remove('hidden');
               }
-              if (empresaData && empresaData.googleUrl) {
+              var urlGoogle = normalizarUrlExterna(empresaData && empresaData.googleUrl);
+              if (urlGoogle) {
                 var btnG = document.getElementById('btn-google-redirect');
-                btnG.href = empresaData.googleUrl;
+                btnG.href = urlGoogle;
                 btnG.classList.remove('hidden');
               }
             } else {
@@ -231,7 +241,5 @@
           });
       }
     </script>
-  </body>
-</html>
   </body>
 </html>
