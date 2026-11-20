@@ -261,20 +261,45 @@
           <p style="color: var(--text-muted); font-size: 0.9rem;">Plataforma SaaS de Reputación y Fidelización</p>
         </div>
         
-        <form id="login-form" onsubmit="procesarLogin(event)">
+        <form id="login-form" onsubmit="procesarLogin(event)" autocomplete="off">
           <div class="form-group">
             <label>Correo Electrónico</label>
-            <input type="email" id="login-email" required value="fryserviciosdigitales@gmail.com">
+            <input type="email" id="login-email" required autocomplete="off" placeholder="Introduce tu correo">
           </div>
           <div class="form-group">
             <label>Contraseña</label>
-            <input type="password" id="login-password" required value="123456">
+            <input type="password" id="login-password" required autocomplete="new-password" placeholder="Introduce tu contraseña">
           </div>
           <button type="submit" class="btn" id="btn-login-submit" style="width: 100%;">Iniciar Sesión</button>
         </form>
         <div id="login-error" style="color: var(--danger); margin-top: 1rem; text-align: center; display: none; font-size: 0.9rem;"></div>
       </div>
     </div>
+
+    <!-- Pre-ocultado síncrono si viene ?id= o ?panel= para evitar cualquier flash del login -->
+    <script>
+      (function() {
+        try {
+          var p = new URLSearchParams(window.location.search);
+          var qr = (p.get('id') || '').trim();
+          var pnl = (p.get('panel') || '').trim();
+          if (qr || pnl) {
+            var auth = document.getElementById('auth-screen');
+            if (auth) {
+              auth.style.display = 'none';
+              auth.classList.add('hidden');
+            }
+          }
+          if (qr) {
+            var cli = document.getElementById('client-rating-screen');
+            if (cli) {
+              cli.classList.remove('hidden');
+              cli.style.display = 'flex';
+            }
+          }
+        } catch (e) {}
+      })();
+    </script>
 
     <!-- PANTALLA APLICACIÓN (SPA) -->
     <div id="app-screen" class="hidden">
@@ -678,6 +703,15 @@
       var listaUsuariosGlobal = [];
       window.listaEmpresasGlobal = [];
 
+      function escapeHtml(str) {
+        return String(str === undefined || str === null ? '' : str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
       function apiGet(paramsObj) {
         var query = Object.keys(paramsObj).map(function(k) {
           return encodeURIComponent(k) + '=' + encodeURIComponent(paramsObj[k] !== undefined && paramsObj[k] !== null ? paramsObj[k] : '');
@@ -712,6 +746,7 @@
       /* ==================== VISTA CLIENTE VALORACIÓN (EN GITHUB) ==================== */
       function mostrarNoDisponible(detalle) {
         document.getElementById('client-loading').classList.add('hidden');
+        document.getElementById('rating-view').classList.add('hidden');
         var box = document.getElementById('client-unavailable');
         box.classList.remove('hidden');
         if (detalle) {
@@ -721,10 +756,16 @@
       }
 
       function iniciarVistaClienteQR(empId) {
-        document.getElementById('auth-screen').style.display = 'none';
-        document.getElementById('auth-screen').classList.add('hidden');
-        document.getElementById('app-screen').classList.add('hidden');
-        document.getElementById('app-screen').style.display = 'none';
+        var auth = document.getElementById('auth-screen');
+        var app = document.getElementById('app-screen');
+        if (auth) {
+          auth.style.display = 'none';
+          auth.classList.add('hidden');
+        }
+        if (app) {
+          app.classList.add('hidden');
+          app.style.display = 'none';
+        }
 
         var screen = document.getElementById('client-rating-screen');
         screen.classList.remove('hidden');
@@ -756,7 +797,6 @@
           });
       }
 
-      // Ejecutar de inmediato si viene ?id=... para evitar que se vea el login
       if (clienteQrId) {
         iniciarVistaClienteQR(clienteQrId);
       }
@@ -797,14 +837,14 @@
           email: email || ''
         })
           .then(function(data) {
-            document.getElementById('rating-view').classList.add('hidden');
-            document.getElementById('success-view').classList.remove('hidden');
             if (!data || !data.success) {
               enviandoVoto = false;
               if (btnPriv) btnPriv.disabled = false;
-              document.getElementById('success-msg').innerText = (data && data.error) ? data.error : 'No se pudo registrar la valoración.';
+              alert((data && data.error) ? data.error : 'No se pudo registrar la valoración.');
               return;
             }
+            document.getElementById('rating-view').classList.add('hidden');
+            document.getElementById('success-view').classList.remove('hidden');
             if (estrellas >= 4) {
               var textoCaducidad = (data.cupon && data.cupon.caducidad)
                 ? (' Válido hasta el ' + data.cupon.caducidad + '.')
@@ -908,10 +948,40 @@
           });
       }
 
-      function cerrarSesion() {
+      function limpiarDatosSesion() {
         usuarioActual = null;
-        if (directEmpresaId) {
-          window.top.location.href = githubAppDomain + '/';
+        listaUsuariosGlobal = [];
+        window.listaEmpresasGlobal = [];
+        if (window.grafEmpresa) {
+          window.grafEmpresa.destroy();
+          window.grafEmpresa = null;
+        }
+        if (window.grafSatisfaccion) {
+          window.grafSatisfaccion.destroy();
+          window.grafSatisfaccion = null;
+        }
+        var loginForm = document.getElementById('login-form');
+        if (loginForm) loginForm.reset();
+        var emailInput = document.getElementById('login-email');
+        var passInput = document.getElementById('login-password');
+        var errDiv = document.getElementById('login-error');
+        if (emailInput) emailInput.value = '';
+        if (passInput) passInput.value = '';
+        if (errDiv) {
+          errDiv.style.display = 'none';
+          errDiv.innerText = '';
+        }
+      }
+
+      function cerrarSesion() {
+        var esPortal = !!directEmpresaId;
+        limpiarDatosSesion();
+        if (esPortal) {
+          try {
+            window.top.location.href = githubAppDomain + '/';
+          } catch (e) {
+            window.location.href = githubAppDomain + '/';
+          }
           return;
         }
         document.getElementById('app-screen').classList.add('hidden');
@@ -921,7 +991,6 @@
         authScreen.style.display = 'flex';
         document.getElementById('admin-nav').classList.add('hidden');
         document.getElementById('empresa-nav').classList.add('hidden');
-        document.getElementById('login-password').value = '';
       }
 
       function navegar(vista) {
@@ -972,10 +1041,10 @@
               var r = m.ranking[i];
               tbody.innerHTML +=
                 '<tr>' +
-                '<td><strong>' + (r.nombre || '') + '</strong></td>' +
-                '<td>' + (r.totalVal || 0) + '</td>' +
-                '<td>⭐ ' + (r.media || 0) + '</td>' +
-                '<td>' + (r.googleClicks || 0) + '</td>' +
+                '<td><strong>' + escapeHtml(r.nombre || '') + '</strong></td>' +
+                '<td>' + escapeHtml(r.totalVal || 0) + '</td>' +
+                '<td>⭐ ' + escapeHtml(r.media || 0) + '</td>' +
+                '<td>' + escapeHtml(r.googleClicks || 0) + '</td>' +
                 '</tr>';
             }
           })
@@ -988,7 +1057,7 @@
             if (!select) return;
             select.innerHTML = '<option value="">-- Selecciona establecimiento --</option>';
             for (var i = 0; i < empresas.length; i++) {
-              select.innerHTML += '<option value="' + empresas[i].id + '">' + empresas[i].nombre + '</option>';
+              select.innerHTML += '<option value="' + escapeHtml(empresas[i].id) + '">' + escapeHtml(empresas[i].nombre) + '</option>';
             }
           })
           .catch(function(err) { console.error(err); });
@@ -1013,10 +1082,10 @@
               var badgeClass = (!c.usado && !c.caducado) ? 'badge-active' : 'badge-inactive';
               tbody.innerHTML +=
                 '<tr>' +
-                '<td><strong>' + (c.nombreEmpresa || '') + '</strong></td>' +
-                '<td><code>' + (c.codigo || '') + '</code></td>' +
-                '<td>' + (c.descuento || '') + '</td>' +
-                '<td>' + (c.caducidad || '') + '</td>' +
+                '<td><strong>' + escapeHtml(c.nombreEmpresa || '') + '</strong></td>' +
+                '<td><code>' + escapeHtml(c.codigo || '') + '</code></td>' +
+                '<td>' + escapeHtml(c.descuento || '') + '</td>' +
+                '<td>' + escapeHtml(c.caducidad || '') + '</td>' +
                 '<td><span class="badge ' + badgeClass + '">' + estado + '</span></td>' +
                 '<td style="text-align:right;">' +
                 (!c.usado && !c.caducado ? '<button class="btn btn-sm btn-success" onclick="marcarUsadoAdmin(\'' + escJs(c.codigo) + '\')">Canjear</button> ' : '') +
@@ -1089,9 +1158,9 @@
           var emp = lista[i];
           var panelUrl = githubAppDomain + '/?panel=' + encodeURIComponent(emp.id);
           tbody.innerHTML += '<tr>' +
-            '<td><strong>' + (emp.nombre || '') + '</strong><br><small style="color: var(--primary); font-weight: 500;">🎁 ' + (emp.recompensa || 'Cupón estándar') + '</small></td>' +
-            '<td>' + (emp.email || '') + '<br><small style="color: var(--text-muted);">' + (emp.telefono || 'Sin teléfono') + '</small></td>' +
-            '<td><span class="badge ' + (emp.plan === 'Premium' ? 'badge-premium' : 'badge-standard') + '">' + (emp.plan || 'Standard') + '</span><br><span class="badge ' + (emp.activo ? 'badge-active' : 'badge-inactive') + '" style="margin-top: 4px;">' + (emp.activo ? 'Activa' : 'Inactiva') + '</span></td>' +
+            '<td><strong>' + escapeHtml(emp.nombre || '') + '</strong><br><small style="color: var(--primary); font-weight: 500;">🎁 ' + escapeHtml(emp.recompensa || 'Cupón estándar') + '</small></td>' +
+            '<td>' + escapeHtml(emp.email || '') + '<br><small style="color: var(--text-muted);">' + escapeHtml(emp.telefono || 'Sin teléfono') + '</small></td>' +
+            '<td><span class="badge ' + (emp.plan === 'Premium' ? 'badge-premium' : 'badge-standard') + '">' + escapeHtml(emp.plan || 'Standard') + '</span><br><span class="badge ' + (emp.activo ? 'badge-active' : 'badge-inactive') + '" style="margin-top: 4px;">' + (emp.activo ? 'Activa' : 'Inactiva') + '</span></td>' +
             '<td style="text-align: right; white-space: nowrap;">' +
               '<button class="btn btn-sm btn-success" onclick="abrirModalCartelPorEmpresa(\'' + escJs(emp.id) + '\')">🖨️ QR</button> ' +
               '<button class="btn btn-sm btn-outline" onclick="prepararEdicionEmpresa(\'' + escJs(emp.id) + '\')">✏️ Editar</button> ' +
@@ -1225,7 +1294,7 @@
             if (!selectEmp) return;
             selectEmp.innerHTML = '<option value="">-- Selecciona empresa --</option>';
             for (var i = 0; i < empresas.length; i++) {
-              selectEmp.innerHTML += '<option value="' + empresas[i].id + '">' + empresas[i].nombre + '</option>';
+              selectEmp.innerHTML += '<option value="' + escapeHtml(empresas[i].id) + '">' + escapeHtml(empresas[i].nombre) + '</option>';
             }
           })
           .catch(function(err) { console.error(err); });
@@ -1246,10 +1315,10 @@
               var u = listaUsuariosGlobal[i];
               tbody.innerHTML +=
                 '<tr>' +
-                '<td><strong>' + (u.nombre || '') + '</strong></td>' +
-                '<td>' + (u.email || '') + '</td>' +
-                '<td><span class="badge ' + (u.rol === 'ADMIN' ? 'badge-premium' : 'badge-active') + '">' + (u.rol || '') + '</span></td>' +
-                '<td>' + (u.empresaId || '-') + '</td>' +
+                '<td><strong>' + escapeHtml(u.nombre || '') + '</strong></td>' +
+                '<td>' + escapeHtml(u.email || '') + '</td>' +
+                '<td><span class="badge ' + (u.rol === 'ADMIN' ? 'badge-premium' : 'badge-active') + '">' + escapeHtml(u.rol || '') + '</span></td>' +
+                '<td>' + escapeHtml(u.empresaId || '-') + '</td>' +
                 '<td style="text-align:right;">' +
                 '<button class="btn btn-sm btn-outline" style="margin-right:4px;" onclick="prepararEdicionUsuario(\'' + escJs(u.email) + '\')">Editar</button>' +
                 (String(u.email || '').toLowerCase() !== 'fryserviciosdigitales@gmail.com'
@@ -1394,9 +1463,9 @@
                   var c = data.comentarios[i];
                   ultimas.innerHTML +=
                     '<div style="padding:14px;border-bottom:1px solid #e5e7eb;">' +
-                    '<strong>' + c.estrellas + ' ⭐</strong><br>' +
-                    '<span style="font-size:.9rem;">' + (c.comentario || 'Sin comentario') + '</span><br>' +
-                    '<small style="color:#64748b;">' + (c.fecha || '') + '</small>' +
+                    '<strong>' + escapeHtml(c.estrellas) + ' ⭐</strong><br>' +
+                    '<span style="font-size:.9rem;">' + escapeHtml(c.comentario || 'Sin comentario') + '</span><br>' +
+                    '<small style="color:#64748b;">' + escapeHtml(c.fecha || '') + '</small>' +
                     '</div>';
                 }
               }
@@ -1422,7 +1491,7 @@
                   '<div style="flex:1;height:10px;background:#e5e7eb;border-radius:12px;margin:0 10px;">' +
                   '<div style="height:100%;width:' + pct + '%;background:' + e.col + ';border-radius:12px;"></div>' +
                   '</div>' +
-                  '<span>' + e.c + '</span>' +
+                  '<span>' + escapeHtml(e.c) + '</span>' +
                   '</div>';
               }
             }
@@ -1438,9 +1507,9 @@
                   var inc = listaInc[y];
                   incidencias.innerHTML +=
                     '<div style="background:#fff1f2;padding:12px;border-left:4px solid #ef4444;margin-bottom:10px;border-radius:8px;">' +
-                    '<strong>' + inc.estrellas + ' ⭐</strong><br>' +
-                    '<small>' + (inc.email || 'Anónimo') + '</small><br><br>' +
-                    (inc.comentario || 'Sin comentario') +
+                    '<strong>' + escapeHtml(inc.estrellas) + ' ⭐</strong><br>' +
+                    '<small>' + escapeHtml(inc.email || 'Anónimo') + '</small><br><br>' +
+                    escapeHtml(inc.comentario || 'Sin comentario') +
                     '</div>';
                 }
               }
@@ -1467,9 +1536,9 @@
                   }
                   tbody.innerHTML +=
                     '<tr>' +
-                    '<td><strong>' + (cpn.codigo || '') + '</strong></td>' +
-                    '<td>' + (cpn.descuento || '') + '</td>' +
-                    '<td>' + (cpn.caducidad || '') + '</td>' +
+                    '<td><strong>' + escapeHtml(cpn.codigo || '') + '</strong></td>' +
+                    '<td>' + escapeHtml(cpn.descuento || '') + '</td>' +
+                    '<td>' + escapeHtml(cpn.caducidad || '') + '</td>' +
                     '<td>' + estadoHtml + '</td>' +
                     '<td style="text-align:right;">' + accionHtml + '</td>' +
                     '</tr>';
@@ -1560,7 +1629,7 @@
           var targetUrl = githubAppDomain + '/?id=' + encodeURIComponent(empId);
           var qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=' + encodeURIComponent(targetUrl);
 
-          document.getElementById('qr-modal-img-container').innerHTML = '<img src="' + qrApiUrl + '" alt="Código QR" style="width:200px; height:200px; display:block; margin:0 auto;">';
+          document.getElementById('qr-modal-img-container').innerHTML = '<img src="' + escapeHtml(qrApiUrl) + '" alt="Código QR" style="width:200px; height:200px; display:block; margin:0 auto;">';
           document.getElementById('qr-modal-url').innerText = targetUrl;
           document.getElementById('modal-cartel').style.display = 'flex';
         });
