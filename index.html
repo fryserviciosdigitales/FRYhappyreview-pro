@@ -682,7 +682,7 @@
         var query = Object.keys(paramsObj).map(function(k) {
           return encodeURIComponent(k) + '=' + encodeURIComponent(paramsObj[k] !== undefined && paramsObj[k] !== null ? paramsObj[k] : '');
         }).join('&');
-        return fetch(gasUrl + '?' + query).then(function(res) {
+        return fetch(gasUrl + '?' + query, { redirect: 'follow' }).then(function(res) {
           if (!res.ok) throw new Error('HTTP ' + res.status);
           return res.json();
         });
@@ -710,6 +710,16 @@
       }
 
       /* ==================== VISTA CLIENTE VALORACIÓN (EN GITHUB) ==================== */
+      function mostrarNoDisponible(detalle) {
+        document.getElementById('client-loading').classList.add('hidden');
+        var box = document.getElementById('client-unavailable');
+        box.classList.remove('hidden');
+        if (detalle) {
+          var p = box.querySelector('p');
+          if (p) p.innerText = detalle;
+        }
+      }
+
       function iniciarVistaClienteQR(empId) {
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('auth-screen').classList.add('hidden');
@@ -722,12 +732,16 @@
 
         apiGet({ action: 'getEmpresa', id: empId })
           .then(function(res) {
-            document.getElementById('client-loading').classList.add('hidden');
             var emp = (res && res.empresa) ? res.empresa : null;
-            if (!emp || !emp.activo) {
-              document.getElementById('client-unavailable').classList.remove('hidden');
+            if (!res || !res.success || !emp) {
+              mostrarNoDisponible('No se encontró el establecimiento (' + empId + '). Verifica que Apps Script esté desplegado en Nueva versión.');
               return;
             }
+            if (emp.activo === false) {
+              mostrarNoDisponible('Este establecimiento está marcado como inactivo.');
+              return;
+            }
+            document.getElementById('client-loading').classList.add('hidden');
             var nombre = String(emp.nombre || 'Establecimiento');
             document.title = nombre + ' - Valoración';
             document.getElementById('cli-empresa-nombre').innerText = nombre;
@@ -737,10 +751,14 @@
             }
             document.getElementById('rating-view').classList.remove('hidden');
           })
-          .catch(function() {
-            document.getElementById('client-loading').classList.add('hidden');
-            document.getElementById('client-unavailable').classList.remove('hidden');
+          .catch(function(err) {
+            mostrarNoDisponible('Error al conectar con el servidor: ' + (err && err.message ? err.message : ''));
           });
+      }
+
+      // Ejecutar de inmediato si viene ?id=... para evitar que se vea el login
+      if (clienteQrId) {
+        iniciarVistaClienteQR(clienteQrId);
       }
 
       function votarEstrellas(n) {
@@ -843,10 +861,7 @@
       }
 
       window.onload = function() {
-        if (clienteQrId) {
-          iniciarVistaClienteQR(clienteQrId);
-          return;
-        }
+        if (clienteQrId) return;
         if (directEmpresaId) {
           activarApp(
             { email: 'portal@empresa.com', nombre: 'Portal Establecimiento', rol: 'EMPRESA', empresaId: directEmpresaId },
