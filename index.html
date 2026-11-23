@@ -229,7 +229,7 @@
           <h1 id="cli-empresa-nombre" style="color: var(--primary); font-size: 1.6rem; margin-bottom: 0.5rem;"></h1>
           <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 2rem;">¿Cómo calificarías tu experiencia hoy con nosotros?</p>
 
-          <div id="stars-container" style="margin-bottom: 2rem;">
+          <div id="stars-container" style="margin-bottom: 1.5rem;">
             <span class="star" onclick="votarEstrellas(1)">★</span>
             <span class="star" onclick="votarEstrellas(2)">★</span>
             <span class="star" onclick="votarEstrellas(3)">★</span>
@@ -237,7 +237,7 @@
             <span class="star" onclick="votarEstrellas(5)">★</span>
           </div>
 
-          <div id="feedback-form" class="hidden" style="border-top: 1px solid var(--border-color); padding-top: 1.5rem; margin-top: 1.5rem;">
+          <div id="feedback-form" class="hidden" style="border-top: 1px solid var(--border-color); padding-top: 1.5rem; margin-top: 1rem;">
             <div class="form-group" style="text-align: left;">
               <label style="color: var(--danger);">¿Qué podríamos haber hecho mejor?</label>
               <textarea id="comentario-input" rows="3" placeholder="Cuéntanos tu experiencia de forma privada..."></textarea>
@@ -246,8 +246,10 @@
               <label>Tu email (opcional):</label>
               <input type="email" id="email-input" placeholder="tu@email.com">
             </div>
-            <button id="btn-enviar-privado" class="btn btn-primary" style="width: 100%; padding: 0.85rem;" onclick="enviarComentarioPrivado()">Enviar Opinión</button>
+            <button type="button" id="btn-enviar-privado" class="btn btn-primary" style="width: 100%; padding: 0.85rem;" onclick="enviarComentarioPrivado()">Enviar Opinión</button>
           </div>
+
+          <a id="google-btn-pre" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-success hidden" style="display: block; width: 100%; padding: 0.85rem; margin-top: 1rem;">🌟 Dejar reseña en Google Maps</a>
         </div>
 
         <div id="success-view" class="hidden">
@@ -847,6 +849,7 @@
             document.getElementById('cli-empresa-nombre').innerText = nombre;
             clienteGoogleUrl = normalizarUrlExterna(emp.googleUrl || '');
             if (clienteGoogleUrl) {
+              document.getElementById('google-btn-pre').href = clienteGoogleUrl;
               document.getElementById('google-btn').href = clienteGoogleUrl;
             }
             document.getElementById('rating-view').classList.remove('hidden');
@@ -868,6 +871,11 @@
         document.querySelectorAll('.star').forEach(function(s, idx) {
           s.style.color = idx < n ? '#eab308' : '#cbd5e1';
         });
+        if (clienteGoogleUrl) {
+          var btnPre = document.getElementById('google-btn-pre');
+          btnPre.href = clienteGoogleUrl;
+          btnPre.classList.remove('hidden');
+        }
         if (n >= 4) {
           document.getElementById('feedback-form').classList.add('hidden');
           enviarVotoBackend(n, '', '');
@@ -906,20 +914,20 @@
             }
             document.getElementById('rating-view').classList.add('hidden');
             document.getElementById('success-view').classList.remove('hidden');
-            if (estrellas >= 4) {
-              var textoCaducidad = (data.cupon && data.cupon.caducidad)
-                ? (' Válido hasta el ' + data.cupon.caducidad + '.')
-                : '';
-              document.getElementById('success-msg').innerText = '¡Muchas gracias por tu valoración de ' + estrellas + ' estrellas! Canjea tu regalo en el local.' + textoCaducidad;
-              if (data.cupon) {
-                document.getElementById('coupon-code').innerText = data.cupon.codigo || '';
-                document.getElementById('coupon-desc').innerText = data.cupon.descuento || '';
-                document.getElementById('coupon-expiry').innerText = data.cupon.caducidad ? ('📅 Válido hasta: ' + data.cupon.caducidad) : '';
-                document.getElementById('coupon-box').classList.remove('hidden');
-              }
-              if (clienteGoogleUrl) {
-                document.getElementById('google-btn').classList.remove('hidden');
-              }
+            if (clienteGoogleUrl) {
+              var btnPost = document.getElementById('google-btn');
+              btnPost.href = clienteGoogleUrl;
+              btnPost.classList.remove('hidden');
+            }
+            if (data.cupon) {
+              var textoCaducidad = data.cupon.caducidad ? (' Válido hasta el ' + data.cupon.caducidad + '.') : '';
+              document.getElementById('success-msg').innerText = '¡Muchas gracias por tu valoración! Has ganado un cupón de regalo.' + textoCaducidad;
+              document.getElementById('coupon-code').innerText = data.cupon.codigo || '';
+              document.getElementById('coupon-desc').innerText = data.cupon.descuento || '';
+              document.getElementById('coupon-expiry').innerText = data.cupon.caducidad ? ('📅 Válido hasta: ' + data.cupon.caducidad) : '';
+              document.getElementById('coupon-box').classList.remove('hidden');
+            } else if (estrellas >= 4) {
+              document.getElementById('success-msg').innerText = '¡Muchas gracias por tu valoración de ' + estrellas + ' estrellas!';
             } else {
               document.getElementById('success-msg').innerText = 'Hemos recibido tus comentarios de forma privada. Muchas gracias por ayudarnos a mejorar.';
             }
