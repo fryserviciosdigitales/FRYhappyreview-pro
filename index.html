@@ -371,6 +371,10 @@
         </div>
       </header>
 
+      <div id="app-notice-banner" class="container hidden" style="padding-bottom: 0;">
+        <div class="card" id="app-notice-box" style="margin-bottom: 0; border-color: #f59e0b; background: #fffbeb; color: #92400e; font-size: 0.88rem;"></div>
+      </div>
+
       <div class="container">
         <!-- VISTA ADMIN DASHBOARD -->
         <div id="view-admin-dash" class="hidden">
@@ -790,6 +794,19 @@
         return String(str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
       }
 
+      function mostrarAvisoApp(texto) {
+        var wrap = document.getElementById('app-notice-banner');
+        var box = document.getElementById('app-notice-box');
+        if (!wrap || !box) return;
+        if (!texto) {
+          wrap.classList.add('hidden');
+          box.innerText = '';
+          return;
+        }
+        box.innerText = texto;
+        wrap.classList.remove('hidden');
+      }
+
       /* ==================== MODAL LEGAL ==================== */
       function abrirModalLegal(seccion) {
         renderContenidoLegal(seccion || 'aviso');
@@ -1063,6 +1080,7 @@
       function activarApp(usuario, token) {
         usuarioActual = usuario;
         sessionTokenActual = token || '';
+        mostrarAvisoApp('');
 
         var rol = getRolActual();
         if (rol === 'EMPRESA') {
@@ -1150,6 +1168,7 @@
         sessionTokenActual = '';
         listaUsuariosGlobal = [];
         window.listaEmpresasGlobal = [];
+        mostrarAvisoApp('');
         if (window.grafEmpresa) {
           window.grafEmpresa.destroy();
           window.grafEmpresa = null;
@@ -1222,7 +1241,7 @@
         apiGet({ action: 'getMetricasAdmin' })
           .then(function(res) {
             if (res && res.success === false) {
-              if (res.code === 'UNAUTHORIZED') { cerrarSesion(); return; }
+              mostrarAvisoApp('Aviso al cargar métricas: ' + (res.error || res.message || 'Respuesta no válida del servidor'));
               return;
             }
             var m = (res && res.data) ? res.data : (res || {});
@@ -1255,7 +1274,10 @@
                 '</tr>';
             }
           })
-          .catch(function(err) { console.error(err); });
+          .catch(function(err) {
+            console.error(err);
+            mostrarAvisoApp('No se pudieron cargar las métricas del panel: ' + (err && err.message ? err.message : 'Error de red'));
+          });
 
         apiGet({ action: 'getEmpresas' })
           .then(function(data) {
@@ -1666,8 +1688,7 @@
         apiGet({ action: 'getMetricasEmpresa', id: empresaId, empresaId: empresaId })
           .then(function(res) {
             if (res && res.success === false) {
-              if (res.code === 'UNAUTHORIZED') { cerrarSesion(); return; }
-              alert(res.error || res.message || 'No autorizado para ver estas métricas.');
+              mostrarAvisoApp('Aviso al cargar métricas del establecimiento: ' + (res.error || res.message || 'Respuesta no válida del servidor'));
               return;
             }
             var data = (res && res.data) ? res.data : (res || {});
@@ -1775,7 +1796,10 @@
             cargarGraficaEmpresa(empresaId);
             cargarGraficaSatisfaccion(data.positivas || 0, data.negativas || 0);
           })
-          .catch(function(error) { console.error(error); });
+          .catch(function(error) {
+            console.error(error);
+            mostrarAvisoApp('No se pudieron cargar las métricas del establecimiento: ' + (error && error.message ? error.message : 'Error de red'));
+          });
       }
 
       function cargarGraficaEmpresa(empresaId) {
