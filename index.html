@@ -209,6 +209,34 @@
         margin-bottom: 1rem;
         text-align: center;
       }
+      .legal-link-btn {
+        background: none;
+        border: none;
+        color: var(--primary);
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-decoration: underline;
+        cursor: pointer;
+        padding: 0 2px;
+      }
+      .legal-section h3 {
+        font-size: 1rem;
+        color: var(--text);
+        margin: 1rem 0 0.4rem;
+      }
+      .legal-section h3:first-child {
+        margin-top: 0;
+      }
+      .legal-section p, .legal-section li {
+        font-size: 0.88rem;
+        color: var(--text-muted);
+        line-height: 1.5;
+        margin-bottom: 0.45rem;
+      }
+      .legal-section ul {
+        padding-left: 1.2rem;
+        margin-bottom: 0.6rem;
+      }
     </style>
   </head>
   <body>
@@ -246,6 +274,9 @@
               <label>Tu email (opcional):</label>
               <input type="email" id="email-input" placeholder="tu@email.com">
             </div>
+            <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 0.85rem; text-align: left;">
+              Tu comentario se envía al establecimiento y es gestionado tecnológicamente por <strong>FRY SERVICIOS DIGITALES</strong>. Si dejas tu email, solo se usará para responder a tu opinión. Consultas y privacidad: <strong>fryserviciosdigitales@gmail.com</strong> · Tel. <strong>625788338</strong>. Consulta nuestra <button type="button" class="legal-link-btn" onclick="abrirModalLegal('privacidad')">Política de Privacidad</button> y <button type="button" class="legal-link-btn" onclick="abrirModalLegal('aviso')">Aviso Legal</button>.
+            </p>
             <button type="button" id="btn-enviar-privado" class="btn btn-primary" style="width: 100%; padding: 0.85rem;" onclick="enviarComentarioPrivado()">Enviar Opinión</button>
           </div>
 
@@ -288,6 +319,13 @@
           <button type="submit" class="btn" id="btn-login-submit" style="width: 100%;">Iniciar Sesión</button>
         </form>
         <div id="login-error" style="color: var(--danger); margin-top: 1rem; text-align: center; display: none; font-size: 0.9rem;"></div>
+
+        <div style="margin-top: 1.25rem; padding-top: 0.85rem; border-top: 1px solid var(--border-color); font-size: 0.78rem; color: var(--text-muted); text-align: center; line-height: 1.5;">
+          <strong>FRY SERVICIOS DIGITALES</strong> · fryserviciosdigitales@gmail.com · Tel. 625788338<br>
+          <button type="button" class="legal-link-btn" onclick="abrirModalLegal('aviso')">Aviso Legal</button> ·
+          <button type="button" class="legal-link-btn" onclick="abrirModalLegal('privacidad')">Política de Privacidad</button> ·
+          <button type="button" class="legal-link-btn" onclick="abrirModalLegal('condiciones')">Condiciones de Uso</button>
+        </div>
       </div>
     </div>
 
@@ -328,6 +366,7 @@
             <button type="button" class="nav-btn" onclick="navegar('empresa-dash')">📈 Mi Panel</button>
             <button type="button" class="nav-btn" onclick="abrirModalCartelPorEmpresa(getEmpresaIdAutorizada())">🖨️ Ver QR y Cartel</button>
           </div>
+          <button type="button" class="nav-btn" onclick="abrirModalLegal('condiciones')">📄 Legal</button>
           <button type="button" class="nav-btn" onclick="cerrarSesion()" style="border-color: #fca5a5; color: #dc2626; background: #fef2f2;">Cerrar Sesión</button>
         </div>
       </header>
@@ -695,6 +734,28 @@
       </div>
     </div>
 
+    <!-- MODAL TEXTOS LEGALES (ORIENTACIÓN PRÁCTICA) -->
+    <div id="modal-legal" class="modal">
+      <div class="modal-content" style="max-width: 680px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem;">
+          <h2 id="legal-modal-titulo">Información Legal</h2>
+          <button type="button" class="btn btn-sm btn-secondary" onclick="cerrarModalLegal()">Cerrar</button>
+        </div>
+
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.25rem;border-bottom:1px solid var(--border-color);padding-bottom:0.85rem;">
+          <button type="button" class="btn btn-sm btn-outline" id="tab-legal-aviso" onclick="renderContenidoLegal('aviso')">Aviso Legal</button>
+          <button type="button" class="btn btn-sm btn-outline" id="tab-legal-privacidad" onclick="renderContenidoLegal('privacidad')">Política de Privacidad</button>
+          <button type="button" class="btn btn-sm btn-outline" id="tab-legal-condiciones" onclick="renderContenidoLegal('condiciones')">Condiciones de Uso</button>
+        </div>
+
+        <div id="legal-modal-body" class="legal-section"></div>
+
+        <p style="font-size:0.76rem;color:var(--text-muted);margin-top:1.25rem;padding-top:0.75rem;border-top:1px solid var(--border-color);">
+          Nota: Borrador base de orientación práctica; no constituye asesoramiento legal formal.
+        </p>
+      </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
       var gasUrl = "https://script.google.com/macros/s/AKfycbyh5EuURGrICHOQaaayQM6enInHwfBuz4Lc0qgWcFTeajKPv-asfuUb_xYgp22PHPro2g/exec";
@@ -727,6 +788,65 @@
 
       function escJs(str) {
         return String(str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      }
+
+      /* ==================== MODAL LEGAL ==================== */
+      function abrirModalLegal(seccion) {
+        renderContenidoLegal(seccion || 'aviso');
+        document.getElementById('modal-legal').style.display = 'flex';
+      }
+
+      function cerrarModalLegal() {
+        document.getElementById('modal-legal').style.display = 'none';
+      }
+
+      function renderContenidoLegal(seccion) {
+        var titulo = document.getElementById('legal-modal-titulo');
+        var body = document.getElementById('legal-modal-body');
+        var tabs = {
+          aviso: document.getElementById('tab-legal-aviso'),
+          privacidad: document.getElementById('tab-legal-privacidad'),
+          condiciones: document.getElementById('tab-legal-condiciones')
+        };
+
+        Object.keys(tabs).forEach(function(k) {
+          if (tabs[k]) {
+            tabs[k].className = 'btn btn-sm ' + (k === seccion ? 'btn-primary' : 'btn-outline');
+          }
+        });
+
+        if (seccion === 'privacidad') {
+          titulo.innerText = 'Política de Privacidad (Borrador Base)';
+          body.innerHTML =
+            '<h3>1. Roles en el tratamiento de datos</h3>' +
+            '<p><strong>FRY SERVICIOS DIGITALES</strong> (contacto: fryserviciosdigitales@gmail.com · Tel. 625788338) actúa como proveedor tecnológico y encargado del tratamiento respecto a las valoraciones, comentarios privados, correos electrónicos opcionales y cupones registrados en nombre de cada establecimiento cliente, y como responsable de los datos de gestión y facturación de sus clientes B2B. Cada establecimiento actúa como responsable del tratamiento de las opiniones y datos aportados por sus propios clientes.</p>' +
+            '<h3>2. Datos tratados y finalidad</h3>' +
+            '<ul>' +
+            '<li>Valoraciones, comentarios privados y correo electrónico opcional para atender incidencias o sugerencias del establecimiento.</li>' +
+            '<li>Códigos de cupón, recompensa, fecha de caducidad y estado de canje para la gestión de fidelización.</li>' +
+            '<li>Datos de cuenta y acceso de usuarios y establecimientos para operar la plataforma.</li>' +
+            '</ul>' +
+            '<h3>3. Alojamiento y conservación</h3>' +
+            '<p>La interfaz web se aloja en GitHub Pages y la lógica/datos se gestionan sobre infraestructura de Google (Apps Script y Google Sheets). Los datos se conservan mientras dure la prestación del servicio o según las condiciones de retención y borrado acordadas tras la baja.</p>';
+        } else if (seccion === 'condiciones') {
+          titulo.innerText = 'Condiciones de Uso del Servicio (Borrador Base)';
+          body.innerHTML =
+            '<h3>1. Objeto y planes</h3>' +
+            '<p>HAPPYREVIEW PRO, operado por <strong>FRY SERVICIOS DIGITALES</strong> (fryserviciosdigitales@gmail.com · Tel. 625788338), facilita herramientas de recogida de opiniones, gestión de incidencias privadas, emisión y canje de cupones y visualización de métricas para establecimientos (planes Standard y Premium).</p>' +
+            '<h3>2. Uso responsable y reseñas</h3>' +
+            '<p>El establecimiento cliente es responsable de la veracidad de sus datos, de las recompensas ofrecidas y del cumplimiento de las políticas aplicables a su perfil de Google y a las promociones que ofrezca.</p>' +
+            '<h3>3. Acceso, impagos y baja</h3>' +
+            '<p>El acceso a los paneles requiere credenciales válidas. En caso de impago o baja, el servicio podrá suspenderse o desactivarse tras el aviso correspondiente, facilitándose la exportación de datos en el plazo acordado antes de su borrado.</p>';
+        } else {
+          titulo.innerText = 'Aviso Legal (Borrador Base)';
+          body.innerHTML =
+            '<h3>1. Titular del servicio</h3>' +
+            '<p>Titular: <strong>FRY SERVICIOS DIGITALES</strong></p>' +
+            '<p>Correo electrónico de contacto: <strong>fryserviciosdigitales@gmail.com</strong></p>' +
+            '<p>Teléfono de contacto: <strong>625788338</strong></p>' +
+            '<h3>2. Condiciones de acceso y responsabilidad</h3>' +
+            '<p>El acceso a esta aplicación implica la aceptación de las condiciones de uso vigentes. La disponibilidad del servicio puede verse afectada por tareas de mantenimiento o incidencias en servicios de terceros (como Google y GitHub).</p>';
+        }
       }
 
       function apiGet(paramsObj) {
