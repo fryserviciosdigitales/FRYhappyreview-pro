@@ -297,7 +297,7 @@
       </div>
     </div>
 
-    <!-- PANTALLA DE LOGIN (SIEMPRE REQUIERE CREDENCIALES, INCLUIDO PORTAL ?panel=...) -->
+    <!-- PANTALLA DE LOGIN -->
     <div id="auth-screen" style="display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 1rem;">
       <div class="card" style="width: 100%; max-width: 400px; text-align: left;">
         <div class="text-center" style="margin-bottom: 1.5rem;">
@@ -329,7 +329,6 @@
       </div>
     </div>
 
-    <!-- Pre-ocultado síncrono si viene ?id= para evitar flash de login -->
     <script>
       (function() {
         try {
@@ -738,7 +737,7 @@
       </div>
     </div>
 
-    <!-- MODAL TEXTOS LEGALES (ORIENTACIÓN PRÁCTICA) -->
+    <!-- MODAL TEXTOS LEGALES -->
     <div id="modal-legal" class="modal">
       <div class="modal-content" style="max-width: 680px;">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem;">
@@ -807,7 +806,6 @@
         wrap.classList.remove('hidden');
       }
 
-      /* ==================== MODAL LEGAL ==================== */
       function abrirModalLegal(seccion) {
         renderContenidoLegal(seccion || 'aviso');
         document.getElementById('modal-legal').style.display = 'flex';
@@ -944,7 +942,6 @@
           .catch(function() {});
       }
 
-      /* ==================== VISTA CLIENTE VALORACIÓN (QR -> ?id=...) ==================== */
       function mostrarNoDisponible(detalle) {
         document.getElementById('client-loading').classList.add('hidden');
         document.getElementById('rating-view').classList.add('hidden');
@@ -1079,7 +1076,6 @@
           });
       }
 
-      /* ==================== SESIÓN Y NAVEGACIÓN ==================== */
       function activarApp(usuario, token) {
         usuarioActual = usuario;
         sessionTokenActual = token || '';
@@ -1237,7 +1233,6 @@
         }
       }
 
-      /* ==================== ADMIN DASHBOARD ==================== */
       function cargarAdminDash() {
         if (getRolActual() !== 'ADMIN') return;
 
@@ -1252,7 +1247,7 @@
             document.getElementById('adm-empresas-premium').innerText = m.empresasPremium || 0;
             document.getElementById('adm-total-val').innerText = m.totalValoraciones || 0;
             document.getElementById('adm-media-global').innerText = m.mediaGlobal || 0;
-            document.getElementById('adm-google-clicks').innerText = m.totalGoogleReseñas || 0;
+            document.getElementById('adm-google-clicks').innerText = m.totalGoogleResenas !== undefined ? m.totalGoogleResenas : (m.totalGoogleReseñas || 0);
             document.getElementById('adm-cupones').innerText = m.totalCuponesEmitidos || 0;
             if (document.getElementById('adm-cupones-usados')) document.getElementById('adm-cupones-usados').innerText = m.cuponesUsados || 0;
             if (document.getElementById('adm-tasa-canje')) document.getElementById('adm-tasa-canje').innerText = (m.tasaCanje || 0) + '%';
@@ -1366,7 +1361,6 @@
         }
       }
 
-      /* ==================== EMPRESAS ==================== */
       function cargarEmpresasAdmin() {
         if (getRolActual() !== 'ADMIN') return;
         var tbody = document.getElementById('empresas-tbody');
@@ -1526,7 +1520,6 @@
         }
       }
 
-      /* ==================== USUARIOS ==================== */
       function cargarUsuariosAdmin() {
         if (getRolActual() !== 'ADMIN') return;
 
@@ -1680,7 +1673,6 @@
         }
       }
 
-      /* ==================== EMPRESA DASHBOARD ==================== */
       function cargarEmpresaDash() {
         var empresaId = getEmpresaIdAutorizada();
         if (!empresaId) {
@@ -1875,7 +1867,6 @@
         }
       }
 
-      /* ==================== MODAL CARTEL Y QR ==================== */
       function abrirModalCartelPorEmpresa(empId) {
         var idFinal = empId || getEmpresaIdAutorizada();
         apiGet({ action: 'getEmpresa', id: idFinal }).then(function(data) {
