@@ -267,11 +267,11 @@
 
           <div id="feedback-form" class="hidden" style="border-top: 1px solid var(--border-color); padding-top: 1.5rem; margin-top: 1rem;">
             <div class="form-group" style="text-align: left;">
-              <label style="color: var(--danger);">¿Qué podríamos haber hecho mejor?</label>
+              <label for="comentario-input" style="color: var(--danger);">¿Qué podríamos haber hecho mejor?</label>
               <textarea id="comentario-input" rows="3" placeholder="Cuéntanos tu experiencia de forma privada..."></textarea>
             </div>
             <div class="form-group" style="text-align: left;">
-              <label>Tu email (opcional):</label>
+              <label for="email-input">Tu email (opcional):</label>
               <input type="email" id="email-input" placeholder="tu@email.com">
             </div>
             <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 0.85rem; text-align: left;">
@@ -413,15 +413,15 @@
             <form id="form-admin-cupon" onsubmit="emitirCuponAdmin(event)">
               <div class="form-row">
                 <div class="form-group" style="flex:2;">
-                  <label>Seleccionar Empresa</label>
+                  <label for="adm-cp-empresa">Seleccionar Empresa</label>
                   <select id="adm-cp-empresa" required></select>
                 </div>
                 <div class="form-group" style="flex:2;">
-                  <label>Recompensa</label>
+                  <label for="adm-cp-desc">Recompensa</label>
                   <input type="text" id="adm-cp-desc" required placeholder="Ej. Refresco Gratis / 20% Descuento">
                 </div>
                 <div class="form-group" style="flex:1;">
-                  <label>Validez</label>
+                  <label for="adm-cp-dias">Validez</label>
                   <select id="adm-cp-dias">
                     <option value="1">1 Día</option>
                     <option value="3">3 Días</option>
@@ -486,11 +486,11 @@
 
               <div class="form-row">
                 <div class="form-group" style="flex: 2;">
-                  <label>Nombre de la Empresa</label>
+                  <label for="emp-nombre">Nombre de la Empresa</label>
                   <input type="text" id="emp-nombre" required placeholder="Ej. Restaurante La Tasca">
                 </div>
                 <div class="form-group" style="flex: 1;">
-                  <label>Plan SaaS</label>
+                  <label for="emp-plan">Plan SaaS</label>
                   <select id="emp-plan">
                     <option value="Standard">Standard</option>
                     <option value="Premium">Premium</option>
@@ -500,27 +500,27 @@
 
               <div class="form-row">
                 <div class="form-group" style="flex: 1;">
-                  <label>Email de Contacto</label>
+                  <label for="emp-email">Email de Contacto</label>
                   <input type="email" id="emp-email" required placeholder="local@empresa.com">
                 </div>
                 <div class="form-group" style="flex: 1;">
-                  <label>Teléfono</label>
+                  <label for="emp-telefono">Teléfono</label>
                   <input type="text" id="emp-telefono" placeholder="+34 600 000 000">
                 </div>
               </div>
 
               <div class="form-group">
-                <label>URL Directa de Reseñas de Google Maps</label>
+                <label for="emp-google">URL Directa de Reseñas de Google Maps</label>
                 <input type="url" id="emp-google" required placeholder="https://g.page/r/...">
               </div>
 
               <div class="form-group">
-                <label>Recompensa por 4-5 Estrellas (Cupón de Fidelización)</label>
+                <label for="emp-recompensa">Recompensa por 4-5 Estrellas (Cupón de Fidelización)</label>
                 <input type="text" id="emp-recompensa" required value="10% de descuento en tu próxima visita" placeholder="Ej. Postre gratis / 15% descuento">
               </div>
 
               <div class="form-group hidden" id="emp-activo-div">
-                <label class="checkbox-container">
+                <label class="checkbox-container" for="emp-activo">
                   <input type="checkbox" id="emp-activo" checked> Empresa Activa en la plataforma
                 </label>
               </div>
@@ -567,22 +567,22 @@
 
               <div class="form-row">
                 <div class="form-group" style="flex:1;">
-                  <label>Email (Login)</label>
+                  <label for="usr-email">Email (Login)</label>
                   <input type="email" id="usr-email" required placeholder="usuario@local.com">
                 </div>
                 <div class="form-group" style="flex:1;">
-                  <label>Contraseña</label>
+                  <label for="usr-password">Contraseña</label>
                   <input type="password" id="usr-password" required placeholder="Mínimo 6 caracteres">
                 </div>
               </div>
 
               <div class="form-row">
                 <div class="form-group" style="flex:1;">
-                  <label>Nombre Completo</label>
+                  <label for="usr-nombre">Nombre Completo</label>
                   <input type="text" id="usr-nombre" required placeholder="Nombre Apellido">
                 </div>
                 <div class="form-group" style="flex:1;">
-                  <label>Rol</label>
+                  <label for="usr-rol">Rol</label>
                   <select id="usr-rol" onchange="cambiarRolSelect()">
                     <option value="EMPRESA">EMPRESA</option>
                     <option value="ADMIN">ADMIN</option>
@@ -591,7 +591,7 @@
               </div>
 
               <div class="form-group" id="usr-empresa-group">
-                <label>Asignar Empresa</label>
+                <label for="usr-empresa-id">Asignar Empresa</label>
                 <select id="usr-empresa-id"></select>
               </div>
 
