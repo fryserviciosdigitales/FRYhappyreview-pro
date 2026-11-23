@@ -314,7 +314,7 @@
           </div>
           <div id="empresa-nav" class="hidden">
             <button class="nav-btn" onclick="navegar('empresa-dash')">📈 Mi Panel</button>
-            <button class="nav-btn" onclick="abrirModalCartelPorEmpresa(usuarioActual && usuarioActual.empresaId)">🖨️ Ver QR y Cartel</button>
+            <button class="nav-btn" onclick="abrirModalCartelPorEmpresa(getEmpresaIdAutorizada())">🖨️ Ver QR y Cartel</button>
           </div>
           <button class="nav-btn" onclick="cerrarSesion()" style="border-color: #fca5a5; color: #dc2626; background: #fef2f2;">Cerrar Sesión</button>
         </div>
@@ -576,8 +576,8 @@
                 <p style="color:var(--text-muted);font-size:.85rem;">Estadísticas en tiempo real y rendimiento de fidelización</p>
               </div>
               <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
-                <button class="btn btn-outline" onclick="copiarEnlaceCliente(usuarioActual && usuarioActual.empresaId)">🔗 Copiar Enlace QR</button>
-                <button class="btn btn-primary" onclick="abrirModalCartelPorEmpresa(usuarioActual && usuarioActual.empresaId)">🖨️ Imprimir Cartel QR</button>
+                <button class="btn btn-outline" onclick="copiarEnlaceCliente(getEmpresaIdAutorizada())">🔗 Copiar Enlace QR</button>
+                <button class="btn btn-primary" onclick="abrirModalCartelPorEmpresa(getEmpresaIdAutorizada())">🖨️ Imprimir Cartel QR</button>
               </div>
             </div>
 
@@ -687,6 +687,7 @@
     <script>
       var gasUrl = "https://script.google.com/macros/s/AKfycbyh5EuURGrICHOQaaayQM6enInHwfBuz4Lc0qgWcFTeajKPv-asfuUb_xYgp22PHPro2g/exec";
       var usuarioActual = null;
+      var esPortalDirectoActivo = false;
       var githubAppDomain = 'https://fryserviciosdigitales.github.io/FRYhappyreview-pro';
       var directEmpresaId = '';
       var clienteQrId = '';
@@ -720,6 +721,33 @@
           if (!res.ok) throw new Error('HTTP ' + res.status);
           return res.json();
         });
+      }
+
+      function apiPost(payloadObj) {
+        return fetch(gasUrl, {
+          method: 'POST',
+          redirect: 'follow',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payloadObj || {})
+        }).then(function(res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        });
+      }
+
+      function getRolActual() {
+        return usuarioActual ? String(usuarioActual.rol || '').toUpperCase().trim() : '';
+      }
+
+      function getEmpresaIdAutorizada() {
+        var rol = getRolActual();
+        if (rol === 'EMPRESA') {
+          return usuarioActual && usuarioActual.empresaId ? String(usuarioActual.empresaId).trim() : '';
+        }
+        if (esPortalDirectoActivo && directEmpresaId) {
+          return directEmpresaId;
+        }
+        return usuarioActual && usuarioActual.empresaId ? String(usuarioActual.empresaId).trim() : '';
       }
 
       function normalizarUrlExterna(url) {
@@ -840,7 +868,7 @@
             if (!data || !data.success) {
               enviandoVoto = false;
               if (btnPriv) btnPriv.disabled = false;
-              alert((data && data.error) ? data.error : 'No se pudo registrar la valoración.');
+              alert((data && (data.error || data.message)) ? (data.error || data.message) : 'No se pudo registrar la valoración.');
               return;
             }
             document.getElementById('rating-view').classList.add('hidden');
@@ -873,6 +901,8 @@
       /* ==================== SESIÓN Y NAVEGACIÓN ==================== */
       function activarApp(usuario, esPortalDirecto) {
         usuarioActual = usuario;
+        esPortalDirectoActivo = !!esPortalDirecto;
+
         var authScreen = document.getElementById('auth-screen');
         var appScreen = document.getElementById('app-screen');
         authScreen.style.display = 'none';
@@ -880,23 +910,45 @@
         appScreen.classList.remove('hidden');
         appScreen.style.display = 'block';
 
-        document.getElementById('user-display-name').innerText = esPortalDirecto
+        var rol = getRolActual();
+        document.getElementById('user-display-name').innerText = esPortalDirectoActivo
           ? 'Portal Directo'
-          : ((usuarioActual.nombre || usuarioActual.email || '') + (usuarioActual.rol ? ' (' + usuarioActual.rol + ')' : ''));
+          : ((usuarioActual.nombre || usuarioActual.email || '') + (rol ? ' (' + rol + ')' : ''));
 
         document.getElementById('admin-nav').classList.add('hidden');
         document.getElementById('empresa-nav').classList.add('hidden');
 
-        if (usuarioActual.rol === 'ADMIN') {
+        if (rol === 'ADMIN') {
           document.getElementById('admin-nav').classList.remove('hidden');
           navegar('admin-dash');
-        } else if (usuarioActual.rol === 'EMPRESA') {
-          if (!usuarioActual.empresaId) {
+        } else if (rol === 'EMPRESA') {
+          var empId = getEmpresaIdAutorizada();
+          if (!empId) {
             alert('El usuario EMPRESA no tiene EmpresaID asignado');
+            cerrarSesion();
+            return;
+          }
+          if (esPortalDirectoActivo) {
+            apiGet({ action: 'getEmpresa', id: empId }).then(function(res) {
+              var emp = (res && res.empresa) ? res.empresa : null;
+              if (!res || !res.success || !emp || emp.activo === false) {
+                alert('El enlace del portal no es válido o el establecimiento está inactivo.');
+                cerrarSesion();
+                return;
+              }
+              document.getElementById('empresa-nav').classList.remove('hidden');
+              navegar('empresa-dash');
+            }).catch(function() {
+              document.getElementById('empresa-nav').classList.remove('hidden');
+              navegar('empresa-dash');
+            });
             return;
           }
           document.getElementById('empresa-nav').classList.remove('hidden');
           navegar('empresa-dash');
+        } else {
+          alert('Rol de usuario no autorizado.');
+          cerrarSesion();
         }
       }
 
@@ -924,14 +976,14 @@
           btn.innerText = 'Iniciando sesión...';
         }
 
-        apiGet({ action: 'login', email: email, password: pass })
+        apiPost({ action: 'login', email: email, password: pass })
           .then(function(res) {
             if (btn) {
               btn.disabled = false;
               btn.innerText = 'Iniciar Sesión';
             }
             if (!res || !res.success || !res.usuario) {
-              errDiv.innerText = (res && res.error) ? res.error : 'Credenciales incorrectas';
+              errDiv.innerText = (res && (res.error || res.message)) ? (res.error || res.message) : 'Credenciales incorrectas';
               errDiv.style.display = 'block';
               return;
             }
@@ -950,6 +1002,7 @@
 
       function limpiarDatosSesion() {
         usuarioActual = null;
+        esPortalDirectoActivo = false;
         listaUsuariosGlobal = [];
         window.listaEmpresasGlobal = [];
         if (window.grafEmpresa) {
@@ -974,7 +1027,7 @@
       }
 
       function cerrarSesion() {
-        var esPortal = !!directEmpresaId;
+        var esPortal = !!esPortalDirectoActivo;
         limpiarDatosSesion();
         if (esPortal) {
           try {
@@ -994,6 +1047,19 @@
       }
 
       function navegar(vista) {
+        var rol = getRolActual();
+        var esVistaAdmin = (vista === 'admin-dash' || vista === 'empresas-view' || vista === 'usuarios-view');
+        var esVistaEmpresa = (vista === 'empresa-dash');
+
+        if (esVistaAdmin && rol !== 'ADMIN') {
+          alert('Acceso restringido a administradores.');
+          return;
+        }
+        if (esVistaEmpresa && rol !== 'EMPRESA' && rol !== 'ADMIN') {
+          alert('Acceso no autorizado.');
+          return;
+        }
+
         document.getElementById('view-admin-dash').classList.add('hidden');
         document.getElementById('view-empresas').classList.add('hidden');
         document.getElementById('view-usuarios').classList.add('hidden');
@@ -1016,7 +1082,9 @@
 
       /* ==================== ADMIN DASHBOARD ==================== */
       function cargarAdminDash() {
-        apiGet({ action: 'getMetricasAdmin' })
+        if (getRolActual() !== 'ADMIN') return;
+
+        apiGet({ action: 'getMetricasAdmin', rol: 'ADMIN' })
           .then(function(res) {
             var m = (res && res.data) ? res.data : (res || {});
             document.getElementById('adm-empresas-activas').innerText = m.empresasActivas || 0;
@@ -1050,7 +1118,7 @@
           })
           .catch(function(err) { console.error(err); });
 
-        apiGet({ action: 'getEmpresas' })
+        apiGet({ action: 'getEmpresas', rol: 'ADMIN' })
           .then(function(data) {
             var empresas = (data && data.empresas) ? data.empresas : [];
             var select = document.getElementById('adm-cp-empresa');
@@ -1066,7 +1134,9 @@
       }
 
       function cargarCuponesAdminGlobales() {
-        apiGet({ action: 'getTodosLosCuponesAdmin' })
+        if (getRolActual() !== 'ADMIN') return;
+
+        apiGet({ action: 'getTodosLosCuponesAdmin', rol: 'ADMIN' })
           .then(function(res) {
             var lista = (res && res.cupones) ? res.cupones : [];
             var tbody = document.getElementById('adm-cupones-tbody');
@@ -1088,7 +1158,7 @@
                 '<td>' + escapeHtml(c.caducidad || '') + '</td>' +
                 '<td><span class="badge ' + badgeClass + '">' + estado + '</span></td>' +
                 '<td style="text-align:right;">' +
-                (!c.usado && !c.caducado ? '<button class="btn btn-sm btn-success" onclick="marcarUsadoAdmin(\'' + escJs(c.codigo) + '\')">Canjear</button> ' : '') +
+                (!c.usado && !c.caducado ? '<button class="btn btn-sm btn-success" onclick="marcarUsadoAdmin(\'' + escJs(c.codigo) + '\', \'' + escJs(c.empresaId) + '\')">Canjear</button> ' : '') +
                 '<button class="btn btn-sm btn-danger" onclick="borrarCuponAdmin(\'' + escJs(c.id) + '\')">🗑️</button>' +
                 '</td>' +
                 '</tr>';
@@ -1099,6 +1169,7 @@
 
       function emitirCuponAdmin(e) {
         e.preventDefault();
+        if (getRolActual() !== 'ADMIN') return;
         var empId = document.getElementById('adm-cp-empresa').value;
         var desc = document.getElementById('adm-cp-desc').value;
         var dias = document.getElementById('adm-cp-dias').value;
@@ -1106,7 +1177,7 @@
           alert('Selecciona una empresa.');
           return;
         }
-        apiGet({ action: 'emitirCuponAdmin', empresaId: empId, descuento: desc, dias: dias })
+        apiGet({ action: 'emitirCuponAdmin', rol: 'ADMIN', empresaId: empId, descuento: desc, dias: dias })
           .then(function(res) {
             if (res && res.success) {
               alert('¡Cupón emitido con éxito!\nCódigo: ' + res.codigo + '\nCaducidad: ' + res.caducidad);
@@ -1119,22 +1190,25 @@
           .catch(function(err) { console.error(err); });
       }
 
-      function marcarUsadoAdmin(codigo) {
-        apiGet({ action: 'marcarCuponUsado', codigo: codigo }).then(function() { cargarAdminDash(); });
+      function marcarUsadoAdmin(codigo, empresaId) {
+        if (getRolActual() !== 'ADMIN') return;
+        apiGet({ action: 'marcarCuponUsado', rol: 'ADMIN', codigo: codigo, empresaId: empresaId || '' }).then(function() { cargarAdminDash(); });
       }
 
       function borrarCuponAdmin(cuponId) {
+        if (getRolActual() !== 'ADMIN') return;
         if (confirm('¿Eliminar este cupón del sistema?')) {
-          apiGet({ action: 'eliminarCupon', id: cuponId }).then(function() { cargarAdminDash(); });
+          apiGet({ action: 'eliminarCupon', rol: 'ADMIN', id: cuponId }).then(function() { cargarAdminDash(); });
         }
       }
 
       /* ==================== EMPRESAS ==================== */
       function cargarEmpresasAdmin() {
+        if (getRolActual() !== 'ADMIN') return;
         var tbody = document.getElementById('empresas-tbody');
         if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="text-center" style="padding: 1.5rem; color: var(--text-muted);">Cargando establecimientos...</td></tr>';
 
-        apiGet({ action: 'getEmpresas' })
+        apiGet({ action: 'getEmpresas', rol: 'ADMIN' })
           .then(function(data) {
             window.listaEmpresasGlobal = (data && data.empresas) ? data.empresas : [];
             renderizarTablaEmpresas(window.listaEmpresasGlobal);
@@ -1188,6 +1262,7 @@
 
       function guardarEmpresa(e) {
         e.preventDefault();
+        if (getRolActual() !== 'ADMIN') return;
         var id = document.getElementById('emp-id').value;
         var nombre = document.getElementById('emp-nombre').value;
         var email = document.getElementById('emp-email').value;
@@ -1203,8 +1278,8 @@
         btn.innerText = 'Guardando...';
 
         var params = id
-          ? { action: 'editarEmpresa', id: id, nombre: nombre, email: email, telefono: telefono, googleUrl: googleUrl, plan: plan, activo: activo, recompensa: recompensa }
-          : { action: 'crearEmpresa', nombre: nombre, email: email, telefono: telefono, googleUrl: googleUrl, plan: plan, recompensa: recompensa };
+          ? { action: 'editarEmpresa', rol: 'ADMIN', id: id, nombre: nombre, email: email, telefono: telefono, googleUrl: googleUrl, plan: plan, activo: activo, recompensa: recompensa }
+          : { action: 'crearEmpresa', rol: 'ADMIN', nombre: nombre, email: email, telefono: telefono, googleUrl: googleUrl, plan: plan, recompensa: recompensa };
 
         apiGet(params)
           .then(function(res) {
@@ -1226,6 +1301,7 @@
       }
 
       function prepararEdicionEmpresa(id) {
+        if (getRolActual() !== 'ADMIN') return;
         var emp = null;
         for (var i = 0; i < window.listaEmpresasGlobal.length; i++) {
           if (String(window.listaEmpresasGlobal[i].id) === String(id)) {
@@ -1265,8 +1341,9 @@
       }
 
       function eliminarEmpresa(id) {
+        if (getRolActual() !== 'ADMIN') return;
         if (confirm('¿Estás totalmente seguro de eliminar esta empresa y sus datos asociados?')) {
-          apiGet({ action: 'eliminarEmpresa', id: id }).then(function() {
+          apiGet({ action: 'eliminarEmpresa', rol: 'ADMIN', id: id }).then(function() {
             cargarEmpresasAdmin();
             mostrarToast('Empresa eliminada correctamente.');
           });
@@ -1287,7 +1364,9 @@
 
       /* ==================== USUARIOS ==================== */
       function cargarUsuariosAdmin() {
-        apiGet({ action: 'getEmpresas' })
+        if (getRolActual() !== 'ADMIN') return;
+
+        apiGet({ action: 'getEmpresas', rol: 'ADMIN' })
           .then(function(data) {
             var empresas = (data && data.empresas) ? data.empresas : [];
             var selectEmp = document.getElementById('usr-empresa-id');
@@ -1299,7 +1378,7 @@
           })
           .catch(function(err) { console.error(err); });
 
-        apiGet({ action: 'getUsuarios' })
+        apiGet({ action: 'getUsuarios', rol: 'ADMIN' })
           .then(function(data) {
             listaUsuariosGlobal = (data && data.usuarios) ? data.usuarios : [];
             var tbody = document.getElementById('usuarios-tbody');
@@ -1338,6 +1417,7 @@
       }
 
       function prepararEdicionUsuario(email) {
+        if (getRolActual() !== 'ADMIN') return;
         var usr = null;
         for (var i = 0; i < listaUsuariosGlobal.length; i++) {
           if (String(listaUsuariosGlobal[i].email || '').toLowerCase() === String(email || '').toLowerCase()) {
@@ -1374,6 +1454,7 @@
 
       function guardarUsuario(e) {
         e.preventDefault();
+        if (getRolActual() !== 'ADMIN') return;
         var emailOriginal = document.getElementById('usr-email-original').value;
         var email = document.getElementById('usr-email').value;
         var password = document.getElementById('usr-password').value;
@@ -1389,10 +1470,11 @@
         if (emailOriginal) {
           apiGet({
             action: 'editarUsuario',
+            rol: 'ADMIN',
             emailOriginal: emailOriginal,
             nombre: nombre,
             email: email,
-            rol: rol,
+            usuarioRol: rol,
             empresaId: rol === 'ADMIN' ? '' : empresaId,
             password: password
           }).then(function(res) {
@@ -1411,10 +1493,11 @@
           }
           apiGet({
             action: 'crearUsuario',
+            rol: 'ADMIN',
             email: email,
             password: password,
             nombre: nombre,
-            rol: rol,
+            usuarioRol: rol,
             empresaId: rol === 'ADMIN' ? '' : empresaId
           }).then(function(res) {
             if (res && res.success) {
@@ -1429,21 +1512,26 @@
       }
 
       function eliminarUsuario(email) {
+        if (getRolActual() !== 'ADMIN') return;
         if (confirm('¿Estás seguro de eliminar este usuario?')) {
-          apiGet({ action: 'eliminarUsuario', email: email }).then(function() { cargarUsuariosAdmin(); });
+          apiGet({ action: 'eliminarUsuario', rol: 'ADMIN', email: email }).then(function() { cargarUsuariosAdmin(); });
         }
       }
 
       /* ==================== EMPRESA DASHBOARD ==================== */
       function cargarEmpresaDash() {
-        if (!usuarioActual || !usuarioActual.empresaId) {
+        var empresaId = getEmpresaIdAutorizada();
+        if (!empresaId) {
           alert('El usuario no tiene empresa asignada');
           return;
         }
-        var empresaId = usuarioActual.empresaId;
 
-        apiGet({ action: 'getMetricasEmpresa', id: empresaId })
+        apiGet({ action: 'getMetricasEmpresa', rol: getRolActual(), id: empresaId, empresaId: empresaId })
           .then(function(res) {
+            if (res && res.success === false) {
+              alert(res.error || res.message || 'No autorizado para ver estas métricas.');
+              return;
+            }
             var data = (res && res.data) ? res.data : (res || {});
             document.getElementById('emp-dash-titulo').innerText = '📈 ' + (data.nombreEmpresa || 'Establecimiento');
             document.getElementById('emp-m-val').innerText = data.totalValoraciones || 0;
@@ -1546,14 +1634,15 @@
               }
             }
 
-            cargarGraficaEmpresa();
+            cargarGraficaEmpresa(empresaId);
             cargarGraficaSatisfaccion(data.positivas || 0, data.negativas || 0);
           })
           .catch(function(error) { console.error(error); });
       }
 
-      function cargarGraficaEmpresa() {
-        apiGet({ action: 'getEvolucionEmpresa', id: usuarioActual.empresaId })
+      function cargarGraficaEmpresa(empresaId) {
+        var empId = empresaId || getEmpresaIdAutorizada();
+        apiGet({ action: 'getEvolucionEmpresa', rol: getRolActual(), id: empId, empresaId: empId })
           .then(function(res) {
             var datos = (res && res.data) ? res.data : (res || { labels: [], values: [] });
             var canvas = document.getElementById('grafica-evolucion');
@@ -1593,8 +1682,9 @@
       }
 
       function marcarCuponUsado(codigo) {
+        var empId = getEmpresaIdAutorizada();
         if (confirm('¿Confirmas que el cliente ha presentado el código ' + codigo + ' en el establecimiento?')) {
-          apiGet({ action: 'marcarCuponUsado', codigo: codigo, empresaId: usuarioActual ? usuarioActual.empresaId : '' })
+          apiGet({ action: 'marcarCuponUsado', rol: getRolActual(), codigo: codigo, empresaId: empId })
             .then(function(res) {
               if (res && res.success) {
                 cargarEmpresaDash();
@@ -1607,7 +1697,8 @@
       }
 
       function copiarEnlaceCliente(empId) {
-        var url = githubAppDomain + '/?id=' + encodeURIComponent(empId);
+        var idFinal = empId || getEmpresaIdAutorizada();
+        var url = githubAppDomain + '/?id=' + encodeURIComponent(idFinal);
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(url).then(function() {
             alert('¡Enlace QR del cliente copiado al portapapeles!');
@@ -1621,12 +1712,13 @@
 
       /* ==================== MODAL CARTEL Y QR ==================== */
       function abrirModalCartelPorEmpresa(empId) {
-        apiGet({ action: 'getEmpresa', id: empId }).then(function(data) {
+        var idFinal = empId || getEmpresaIdAutorizada();
+        apiGet({ action: 'getEmpresa', id: idFinal }).then(function(data) {
           var emp = data && data.empresa ? data.empresa : null;
           var nombreEmpresa = emp ? emp.nombre : 'Establecimiento';
           document.getElementById('poster-empresa-nombre').innerText = nombreEmpresa;
 
-          var targetUrl = githubAppDomain + '/?id=' + encodeURIComponent(empId);
+          var targetUrl = githubAppDomain + '/?id=' + encodeURIComponent(idFinal);
           var qrApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=' + encodeURIComponent(targetUrl);
 
           document.getElementById('qr-modal-img-container').innerHTML = '<img src="' + escapeHtml(qrApiUrl) + '" alt="Código QR" style="width:200px; height:200px; display:block; margin:0 auto;">';
