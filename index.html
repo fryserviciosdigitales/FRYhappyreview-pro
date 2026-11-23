@@ -871,6 +871,9 @@
         if (sessionTokenActual && !merged.sessionToken) {
           merged.sessionToken = sessionTokenActual;
         }
+        if (merged.sessionToken) {
+          return apiPost(merged);
+        }
         var query = Object.keys(merged).map(function(k) {
           return encodeURIComponent(k) + '=' + encodeURIComponent(merged[k] !== undefined && merged[k] !== null ? merged[k] : '');
         }).join('&');
