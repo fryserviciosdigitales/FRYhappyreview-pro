@@ -886,7 +886,11 @@
         if (sessionTokenActual && !merged.sessionToken) {
           merged.sessionToken = sessionTokenActual;
         }
-        return fetch(gasUrl, {
+        var targetUrl = gasUrl;
+        if (merged.sessionToken && merged.action !== 'login') {
+          targetUrl = gasUrl + '?sessionToken=' + encodeURIComponent(merged.sessionToken);
+        }
+        return fetch(targetUrl, {
           method: 'POST',
           redirect: 'follow',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
