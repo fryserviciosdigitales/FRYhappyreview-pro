@@ -254,7 +254,7 @@
           </div>
           <button type="button" id="btn-enviar-privado" class="btn btn-primary" style="width:100%;" onclick="enviarComentarioPrivadoPublico()">Enviar Opinión</button>
         </div>
-        <a id="google-btn-pre" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-success hidden" style="width:100%;margin-top:1rem;text-align:center;">🌟 Dejar reseña en Google Maps</a>
+        <a id="google-btn-pre" href="#" target="_blank" rel="noopener noreferrer" onclick="registrarClickGooglePublico()" class="btn btn-success hidden" style="width:100%;margin-top:1rem;text-align:center;">🌟 Dejar reseña en Google Maps</a>
       </div>
 
       <div id="success-view" class="hidden">
@@ -266,7 +266,7 @@
           <p id="coupon-desc" style="font-size:0.85rem;color:#166534;font-weight:600;margin-top:4px;"></p>
           <p id="coupon-expiry" style="font-size:0.8rem;color:#15803d;margin-top:6px;font-weight:500;"></p>
         </div>
-        <a id="google-btn" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-success hidden" style="width:100%;margin-bottom:1rem;text-align:center;">🌟 Dejar reseña en Google Maps</a>
+        <a id="google-btn" href="#" target="_blank" rel="noopener noreferrer" onclick="registrarClickGooglePublico()" class="btn btn-success hidden" style="width:100%;margin-bottom:1rem;text-align:center;">🌟 Dejar reseña en Google Maps</a>
       </div>
     </div>
   </div>
@@ -747,7 +747,7 @@
         return;
       }
       box.classList.remove("hidden");
-      box.innerText = "Aviso al cargar métricas: " + msg;
+      box.innerText = "Aviso: " + msg;
     }
 
     function mostrarNotificacionToast(mensaje) {
@@ -764,22 +764,30 @@
       window.usuarioActual = usuarioActual;
       window.sessionTokenActual = sessionTokenActual;
 
+      var paquete = (usuarioActual && sessionTokenActual)
+        ? JSON.stringify({ usuario: usuarioActual, sessionToken: sessionTokenActual })
+        : "";
+
       try {
-        if (usuarioActual && sessionTokenActual) {
-          sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({
-            usuario: usuarioActual,
-            sessionToken: sessionTokenActual
-          }));
-        } else {
-          sessionStorage.removeItem(SESSION_STORAGE_KEY);
-        }
+        if (paquete) localStorage.setItem(SESSION_STORAGE_KEY, paquete);
+        else localStorage.removeItem(SESSION_STORAGE_KEY);
+      } catch (e) {}
+
+      try {
+        if (paquete) sessionStorage.setItem(SESSION_STORAGE_KEY, paquete);
+        else sessionStorage.removeItem(SESSION_STORAGE_KEY);
       } catch (e) {}
     }
 
     function restaurarSesionLocal() {
+      var raw = "";
+      try { raw = localStorage.getItem(SESSION_STORAGE_KEY) || ""; } catch (e) {}
+      if (!raw) {
+        try { raw = sessionStorage.getItem(SESSION_STORAGE_KEY) || ""; } catch (e) {}
+      }
+      if (!raw) return null;
+
       try {
-        var raw = sessionStorage.getItem(SESSION_STORAGE_KEY);
-        if (!raw) return null;
         var parsed = JSON.parse(raw);
         if (parsed && parsed.usuario && parsed.sessionToken) {
           usuarioActual = parsed.usuario;
@@ -811,6 +819,7 @@
         "marcarCuponUsado",
         "eliminarCupon",
         "votar",
+        "registrarClickGoogle",
         "login",
         "logout"
       ].indexOf(action) !== -1;
@@ -820,6 +829,11 @@
 
       if (!payload.sessionToken && sessionTokenActual) {
         payload.sessionToken = sessionTokenActual;
+      }
+      if (usuarioActual && action !== "login") {
+        if (!payload.authEmail) payload.authEmail = usuarioActual.email || "";
+        if (!payload.authRol) payload.authRol = usuarioActual.rol || "";
+        if (!payload.authEmpresaId) payload.authEmpresaId = usuarioActual.empresaId || "";
       }
 
       var url = GAS_URL;
@@ -848,9 +862,8 @@
         .then(function(res) { return res.json(); })
         .then(function(data) {
           if (data && data.code === "UNAUTHORIZED" && action !== "login") {
-            limpiarSesionLocal();
-            cerrarSesion(true);
-            mostrarAvisoGlobal(data.error || "Sesión no válida o expirada. Inicia sesión de nuevo.");
+            // No expulsamos de inmediato si acaba de iniciar sesión: mostramos aviso claro para que el usuario revise el despliegue de Apps Script
+            mostrarAvisoGlobal(data.error || "El servidor de Apps Script rechazó el token. Revisa que el despliegue se ejecute como 'Yo' y con acceso 'Cualquier usuario'.");
           }
           return data;
         });
@@ -885,6 +898,15 @@
         .catch(function() {
           document.getElementById("pub-empresa-nombre").innerText = "Error al cargar establecimiento";
         });
+    }
+
+    function registrarClickGooglePublico() {
+      if (!publicEmpresaId) return;
+      llamarApi({
+        action: "registrarClickGoogle",
+        id: publicEmpresaId,
+        estrellas: pubEstrellasGlobal || 5
+      }, "POST").catch(function() {});
     }
 
     function votarEstrellasPublico(n) {
@@ -1063,7 +1085,7 @@
         });
     }
 
-    function cerrarSesion(preservarAviso) {
+    function cerrarSesion() {
       var tokenAInvalidar = sessionTokenActual;
       limpiarSesionLocal();
 
@@ -1080,10 +1102,8 @@
       document.getElementById("admin-nav").classList.add("hidden");
       document.getElementById("empresa-nav").classList.add("hidden");
       document.getElementById("login-password").value = "";
-      if (!preservarAviso) {
-        document.getElementById("login-error").style.display = "none";
-        mostrarAvisoGlobal("");
-      }
+      document.getElementById("login-error").style.display = "none";
+      mostrarAvisoGlobal("");
     }
 
     function navegar(vista) {
